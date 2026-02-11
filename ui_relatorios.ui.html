@@ -1,0 +1,168 @@
+<div v-else-if="state.view === 'relatorios'">
+  <div style="position: sticky; top: 0; z-index: 10; background: rgba(2, 11, 36, 0.9); padding: 12px 0; margin-bottom: 12px;">
+    <div class="header">SAE — Sistema Apollo Enterprise</div>
+    <div class="subheader">Relatorio Executivo da Empresa</div>
+    <div class="muted" v-if="state.relatorio.empresaSelecionada">
+      {{ state.relatorio.empresaSelecionada.nomeFantasia || state.relatorio.empresaSelecionada.nomeRazao }} — {{ state.relatorio.empresaSelecionada.cnpj || '-' }}
+    </div>
+    <div class="muted">Data: {{ state.relatorio.headerDate || '-' }}</div>
+    <div class="muted">Consultoria: Apollo Enterprise</div>
+    <div class="field" style="max-width: 260px; margin-top: 10px;">
+      <label>Empresa</label>
+      <select id="relatorioEmpresa" v-model="state.relatorio.empresaId" @change="actions.onRelatorioEmpresaChange">
+        <option value="">Selecione</option>
+        <option v-for="empresa in state.relatorio.empresas" :key="empresa.empresaId" :value="empresa.empresaId">
+          {{ empresa.nomeFantasia || empresa.nomeRazao }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div v-if="state.relatorio.empresaId">
+    <div class="card">
+      <strong>Secao 1 — KPIs CEO</strong>
+      <div class="muted" style="margin-top: 6px;">Linha 1 (Visao macro)</div>
+      <div class="grid" style="margin-top: 12px;">
+        <div class="card">
+          <h3>Projetos ativos</h3>
+          <p>{{ state.relatorio.cards.projetosAtivos }}</p>
+          <div class="muted">Regra: status != CONCLUIDO</div>
+        </div>
+        <div class="card">
+          <h3>Progresso global</h3>
+          <p>{{ state.relatorio.cards.progressoPlanejadoPercent }}%</p>
+          <div class="muted">Regra: so tarefas planejadas</div>
+        </div>
+        <div class="card">
+          <h3>Backlog sem data</h3>
+          <p>{{ state.relatorio.cards.backlogSemData }}</p>
+          <div class="muted">Regra: dataFim vazio</div>
+        </div>
+        <div class="card">
+          <h3>Metas pendentes</h3>
+          <p>{{ state.relatorio.cards.metasPendentes }}</p>
+          <div class="muted">Regra: meta definida e resultado vazio</div>
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top: 14px;">Linha 2 (alertas)</div>
+      <div class="grid" style="margin-top: 12px;">
+        <div class="card">
+          <h3>Tarefas atrasadas</h3>
+          <p>{{ state.relatorio.cards.atrasadas }}</p>
+        </div>
+        <div class="card">
+          <h3>Vencendo na semana</h3>
+          <p>{{ state.relatorio.cards.vencendoSemana }}</p>
+        </div>
+        <div class="card">
+          <h3>Projetos em risco</h3>
+          <p>{{ state.relatorio.cards.projetosRisco }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 18px;">
+      <strong>Secao 2 — Projetos da Empresa</strong>
+      <table>
+        <thead>
+          <tr>
+            <th>Projeto</th>
+            <th>Fase Atual</th>
+            <th>Status</th>
+            <th>Planejadas</th>
+            <th>Backlog</th>
+            <th>Metas pendentes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="!state.relatorio.projetos.length"><td colspan="6">Sem projetos.</td></tr>
+          <tr v-for="projeto in state.relatorio.projetos" :key="projeto.projetoId" class="clickable" @click="actions.goRelatorioProjeto(state.relatorio.empresaId, projeto.projetoId)">
+            <td>{{ projeto.nomeProjeto }}</td>
+            <td><span :class="actions.statusClass(projeto.faseAtual, true)">{{ actions.statusText(projeto.faseAtual) }}</span></td>
+            <td><span :class="actions.statusClass(projeto.statusCalc)">{{ actions.statusText(projeto.statusCalc) }}</span></td>
+            <td>{{ projeto.planejadas }}</td>
+            <td>{{ projeto.backlog }}</td>
+            <td>{{ projeto.metasPendentes }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top: 18px;">
+      <strong>Secao 3 — Painel Metas (base KPI)</strong>
+      <div class="muted" style="margin-top: 6px;">Metas Pendentes (consultoria)</div>
+      <div v-if="state.relatorio.metasPendentes.length" style="margin-top: 10px;">
+        <div v-for="meta in state.relatorio.metasPendentes" :key="meta.tarefaId">
+          - [{{ meta.nomeProjeto }}] {{ meta.descricao }} -> sem resultado
+        </div>
+      </div>
+      <div v-else class="muted" style="margin-top: 10px;">Sem metas pendentes.</div>
+    </div>
+  </div>
+  <div v-else class="muted" style="margin-top: 12px;">Selecione uma empresa para ver o relatorio.</div>
+</div>
+
+<div v-else-if="state.view === 'relatorio-projeto'">
+  <div style="position: sticky; top: 0; z-index: 10; background: rgba(2, 11, 36, 0.9); padding: 12px 0; margin-bottom: 12px;">
+    <div class="header">Projeto: {{ state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.nomeProjeto : '-' }}</div>
+    <div class="subheader">Empresa: {{ state.relatorioProjeto.empresaNome || '-' }}</div>
+    <div class="muted">Fase atual: {{ actions.statusText(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.faseAtual : '-') }}</div>
+    <div class="muted">Prazo final: {{ actions.formatDate(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.prazoFinal : '') }}</div>
+    <div class="muted">Status: <span :class="actions.statusClass(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.statusCalc : '')">{{ actions.statusText(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.statusCalc : '-') }}</span></div>
+    <div class="actions" style="justify-content: flex-start; margin-top: 10px;">
+      <button class="btn" @click="actions.goRelatoriosEmpresa">Voltar para relatorio da empresa</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <strong>Secao 1 — Saude operacional</strong>
+    <div class="grid" style="margin-top: 12px;">
+      <div class="card"><h3>Planejadas</h3><p>{{ state.relatorioProjeto.cards.planejadas }}</p></div>
+      <div class="card"><h3>Backlog</h3><p>{{ state.relatorioProjeto.cards.backlog }}</p></div>
+      <div class="card"><h3>Atrasadas</h3><p>{{ state.relatorioProjeto.cards.atrasadas }}</p></div>
+      <div class="card"><h3>Metas pendentes</h3><p>{{ state.relatorioProjeto.cards.metasPendentes }}</p></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 18px;">
+    <strong>Secao 2 — Tarefas detalhadas (nucleo do produto)</strong>
+    <table>
+      <thead>
+        <tr>
+          <th>Tarefa</th>
+          <th>Status</th>
+          <th>Data fim</th>
+          <th>Meta</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="!state.relatorioProjeto.tarefas.length"><td colspan="5">Sem tarefas.</td></tr>
+        <template v-for="tarefa in state.relatorioProjeto.tarefas" :key="tarefa.tarefaId">
+          <tr class="clickable" @click="actions.toggleTarefaDetalhe(tarefa.tarefaId)">
+            <td>{{ tarefa.descricao }}</td>
+            <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
+            <td>{{ actions.formatDate(tarefa.dataFim) }}</td>
+            <td>{{ tarefa.metaTipo ? `Meta: ${actions.formatMeta(tarefa.metaTipo, tarefa.metaValor, tarefa.metaUnidade)}` : '-' }}</td>
+            <td>{{ tarefa.resultado || '-' }}</td>
+          </tr>
+          <tr v-if="state.relatorioProjeto.expandedTarefaId === tarefa.tarefaId">
+            <td colspan="5">
+              <div class="card" style="margin-top: 10px;">
+                <div class="muted"><strong>Detalhes</strong></div>
+                <div style="margin-top: 6px;">{{ tarefa.detalhes || '-' }}</div>
+                <div class="muted" style="margin-top: 10px;"><strong>Observação consultoria</strong></div>
+                <div style="margin-top: 6px;">{{ tarefa.observacao || '-' }}</div>
+                <div class="muted" style="margin-top: 10px;"><strong>Resultado entregue</strong></div>
+                <div style="margin-top: 6px;">{{ tarefa.resultado || '-' }}</div>
+                <div class="muted" style="margin-top: 10px;"><strong>Meta associada</strong></div>
+                <div style="margin-top: 6px;">{{ tarefa.metaTipo ? `Tipo: ${tarefa.metaTipo} | Valor: ${tarefa.metaValor || '-'} | Unidade: ${tarefa.metaUnidade || '-'}` : '-' }}</div>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>

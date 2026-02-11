@@ -1,0 +1,59 @@
+<div v-else-if="state.modal.type === 'tarefa'">
+  <div class="field">
+    <label>Fase</label>
+    <select id="tarefaFase">
+      <option v-for="fase in fasesOficiais" :key="fase" :value="fase" :selected="String((state.modal.data.tarefa && state.modal.data.tarefa.fase) || state.modal.data.faseAtual) === fase">{{ fase }}</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Descricao</label>
+    <input id="tarefaDescricao" :value="state.modal.data.tarefa ? state.modal.data.tarefa.descricao : ''" />
+  </div>
+  <div class="field">
+    <label>Meta</label>
+    <select id="tarefaMetaTipo" v-model="state.modal.data.metaTipo">
+      <option value="">Sem meta</option>
+      <option value="NUMERICA">Numerica</option>
+      <option value="PERCENTUAL">Percentual</option>
+      <option value="BOOLEAN">Boolean</option>
+      <option value="TEXTO">Texto</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Meta valor</label>
+    <input
+      id="tarefaMetaValor"
+      :type="state.modal.data.metaTipo === 'NUMERICA' || state.modal.data.metaTipo === 'PERCENTUAL' ? 'number' : 'text'"
+      :placeholder="state.modal.data.metaTipo === 'PERCENTUAL' ? 'Ex: 85' : (state.modal.data.metaTipo === 'BOOLEAN' ? 'true/false' : '')"
+      :value="state.modal.data.tarefa ? state.modal.data.tarefa.metaValor : ''"
+    />
+  </div>
+  <div class="field">
+    <label>Meta unidade</label>
+    <input id="tarefaMetaUnidade" :value="state.modal.data.tarefa ? state.modal.data.tarefa.metaUnidade : ''" />
+  </div>
+  <div class="field">
+    <label>Detalhes</label>
+    <textarea id="tarefaDetalhes" rows="3" :value="state.modal.data.tarefa ? state.modal.data.tarefa.detalhes : ''"></textarea>
+  </div>
+  <div class="field">
+    <label>Resultado</label>
+    <textarea id="tarefaResultado" rows="3" :value="state.modal.data.tarefa ? state.modal.data.tarefa.resultado : ''"></textarea>
+  </div>
+  <div class="field">
+    <label>Observacao</label>
+    <textarea id="tarefaObservacao" rows="3" :value="state.modal.data.tarefa ? state.modal.data.tarefa.observacao : ''"></textarea>
+  </div>
+  <div class="field">
+    <label>Data inicio</label>
+    <input id="tarefaInicio" type="date" :value="state.modal.data.tarefa ? state.modal.data.tarefa.dataInicio || '' : ''" />
+  </div>
+  <div class="field">
+    <label>Data fim</label>
+    <input id="tarefaFim" type="date" :value="state.modal.data.tarefa ? state.modal.data.tarefa.dataFim || '' : ''" />
+  </div>
+  <div class="field">
+    <label>Ordem</label>
+    <input id="tarefaOrdem" type="number" :value="state.modal.data.tarefa && state.modal.data.tarefa.ordem ? state.modal.data.tarefa.ordem : ''" />
+  </div>
+</div>

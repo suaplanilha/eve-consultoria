@@ -1,0 +1,223 @@
+<script>
+  async function renderRelatoriosEmpresa() {
+    setView("relatorios");
+    setViewLoading(true);
+    const empresas = await SAE.exec({ action: "EMPRESAS_LISTAR", payload: {} });
+    const empresasList = ensureList(empresas);
+    APP_STATE.relatorio.empresas = empresasList;
+    APP_STATE.relatorio.headerDate = formatDate(todayISO());
+
+    if (!APP_STATE.relatorio.empresaId && empresasList.length) {
+      APP_STATE.relatorio.empresaId = String(empresasList[0].empresaId);
+    }
+
+    if (APP_STATE.relatorio.empresaId) {
+      await renderRelatoriosEmpresaContent(APP_STATE.relatorio.empresaId);
+    } else {
+      APP_STATE.relatorio.projetos = [];
+      APP_STATE.relatorio.metasPendentes = [];
+      APP_STATE.relatorio.empresaSelecionada = null;
+      APP_STATE.relatorio.cards = {
+        projetosAtivos: 0,
+        progressoPlanejadoPercent: 0,
+        backlogSemData: 0,
+        metasPendentes: 0,
+        atrasadas: 0,
+        vencendoSemana: 0,
+        projetosRisco: 0
+      };
+    }
+    setViewLoading(false);
+  }
+
+  async function renderRelatoriosEmpresaContent(empresaId) {
+    if (!empresaId) {
+      APP_STATE.relatorio.projetos = [];
+      APP_STATE.relatorio.metasPendentes = [];
+      APP_STATE.relatorio.empresaSelecionada = null;
+      APP_STATE.relatorio.cards = {
+        projetosAtivos: 0,
+        progressoPlanejadoPercent: 0,
+        backlogSemData: 0,
+        metasPendentes: 0,
+        atrasadas: 0,
+        vencendoSemana: 0,
+        projetosRisco: 0
+      };
+      return;
+    }
+
+    setViewLoading(true);
+    APP_STATE.relatorio.empresaSelecionada = ensureList(APP_STATE.relatorio.empresas).filter(function (empresa) {
+      return String(empresa.empresaId) === String(empresaId);
+    })[0] || null;
+
+    const projetos = await SAE.exec({
+      action: "PROJETOS_LISTAR_EMPRESA",
+      payload: { empresaId: empresaId }
+    });
+    const projetosList = ensureList(projetos);
+    var tarefasPorProjeto = {};
+
+    if (projetosList.length) {
+      var tarefasList = await Promise.all(
+        projetosList.map(function (projeto) {
+          return SAE.exec({
+            action: "TAREFAS_LISTAR_POR_PROJETO",
+            payload: { projetoId: projeto.projetoId }
+          });
+        })
+      );
+      projetosList.forEach(function (projeto, idx) {
+        tarefasPorProjeto[String(projeto.projetoId)] = ensureList(tarefasList[idx]);
+      });
+    }
+
+    var projetosAtivos = projetosList.filter(function (projeto) {
+      var status = String(projeto.statusCalc || "").toUpperCase();
+      return status !== "CONCLUIDO" && status !== "CONCLUIDA";
+    }).length;
+    var projetosRisco = projetosList.filter(function (projeto) {
+      return String(projeto.statusCalc || "").toUpperCase() === "RISCO";
+    }).length;
+    var backlogSemData = 0;
+    var metasPendentes = [];
+    var metasPendentesCount = 0;
+    var atrasadas = 0;
+    var vencendoSemana = 0;
+    var totalPlanejadas = 0;
+    var concluidasPlanejadas = 0;
+
+    var projetosResumo = projetosList.map(function (projeto) {
+      var tarefas = tarefasPorProjeto[String(projeto.projetoId)] || [];
+      var planejadas = tarefas.filter(function (tarefa) {
+        return tarefa.dataFim && String(tarefa.dataFim).trim() !== "";
+      });
+      var backlog = tarefas.filter(function (tarefa) {
+        return !tarefa.dataFim || String(tarefa.dataFim).trim() === "";
+      });
+      var metasPendentesProjeto = tarefas.filter(function (tarefa) {
+        var metaDefinida = !!tarefa.metaTipo;
+        var resultadoVazio = !tarefa.resultado || String(tarefa.resultado).trim() === "";
+        return metaDefinida && resultadoVazio;
+      });
+      var atrasadasProjeto = tarefas.filter(function (tarefa) {
+        return String(tarefa.statusCalc || "").toUpperCase() === "ATRASADA";
+      }).length;
+      var vencendoProjeto = tarefas.filter(function (tarefa) {
+        return String(tarefa.statusCalc || "").toUpperCase() === "VENCENDO_SEMANA";
+      }).length;
+
+      planejadas.forEach(function (tarefa) {
+        totalPlanejadas += 1;
+        if (String(tarefa.statusCalc || "").toUpperCase() === "CONCLUIDA") {
+          concluidasPlanejadas += 1;
+        }
+      });
+
+      metasPendentesProjeto.forEach(function (tarefa) {
+        metasPendentes.push({
+          tarefaId: tarefa.tarefaId,
+          descricao: tarefa.descricao,
+          nomeProjeto: projeto.nomeProjeto,
+          metaTipo: tarefa.metaTipo,
+          metaValor: tarefa.metaValor,
+          metaUnidade: tarefa.metaUnidade,
+          dataFim: tarefa.dataFim,
+          statusCalc: tarefa.statusCalc
+        });
+      });
+
+      backlogSemData += backlog.length;
+      metasPendentesCount += metasPendentesProjeto.length;
+      atrasadas += atrasadasProjeto;
+      vencendoSemana += vencendoProjeto;
+
+      return {
+        projetoId: projeto.projetoId,
+        nomeProjeto: projeto.nomeProjeto,
+        statusCalc: projeto.statusCalc,
+        faseAtual: projeto.faseAtual,
+        planejadas: planejadas.length,
+        backlog: backlog.length,
+        metasPendentes: metasPendentesProjeto.length
+      };
+    });
+
+    var progressoPlanejadoPercent = totalPlanejadas
+      ? Math.round((concluidasPlanejadas / totalPlanejadas) * 100)
+      : 0;
+
+    APP_STATE.relatorio.empresaId = empresaId;
+    APP_STATE.relatorio.projetos = projetosResumo;
+    APP_STATE.relatorio.metasPendentes = metasPendentes;
+    APP_STATE.relatorio.cards = {
+      projetosAtivos: projetosAtivos,
+      progressoPlanejadoPercent: progressoPlanejadoPercent,
+      backlogSemData: backlogSemData,
+      metasPendentes: metasPendentesCount,
+      atrasadas: atrasadas,
+      vencendoSemana: vencendoSemana,
+      projetosRisco: projetosRisco
+    };
+    setViewLoading(false);
+  }
+
+  async function renderRelatorioProjeto(empresaId, projetoId) {
+    setView("relatorio-projeto");
+    setViewLoading(true);
+
+    if (!APP_STATE.relatorio.empresas.length) {
+      const empresas = await SAE.exec({ action: "EMPRESAS_LISTAR", payload: {} });
+      APP_STATE.relatorio.empresas = ensureList(empresas);
+    }
+
+    const projetos = await SAE.exec({
+      action: "PROJETOS_LISTAR_EMPRESA",
+      payload: { empresaId: empresaId }
+    });
+    const projetosList = ensureList(projetos);
+    const projeto = projetosList.filter(function (item) {
+      return String(item.projetoId) === String(projetoId);
+    })[0] || null;
+
+    const tarefas = await SAE.exec({
+      action: "TAREFAS_LISTAR_POR_PROJETO",
+      payload: { projetoId: projetoId }
+    });
+    const tarefasList = ensureList(tarefas);
+
+    var planejadas = tarefasList.filter(function (tarefa) {
+      return tarefa.dataFim && String(tarefa.dataFim).trim() !== "";
+    }).length;
+    var backlog = tarefasList.filter(function (tarefa) {
+      return !tarefa.dataFim || String(tarefa.dataFim).trim() === "";
+    }).length;
+    var atrasadas = tarefasList.filter(function (tarefa) {
+      return String(tarefa.statusCalc || "").toUpperCase() === "ATRASADA";
+    }).length;
+    var metasPendentes = tarefasList.filter(function (tarefa) {
+      var metaDefinida = !!tarefa.metaTipo;
+      var resultadoVazio = !tarefa.resultado || String(tarefa.resultado).trim() === "";
+      return metaDefinida && resultadoVazio;
+    }).length;
+
+    var empresa = ensureList(APP_STATE.relatorio.empresas).filter(function (item) {
+      return String(item.empresaId) === String(empresaId);
+    })[0] || null;
+
+    APP_STATE.relatorioProjeto.empresaId = empresaId;
+    APP_STATE.relatorioProjeto.empresaNome = empresa ? (empresa.nomeFantasia || empresa.nomeRazao) : "-";
+    APP_STATE.relatorioProjeto.projetoId = projetoId;
+    APP_STATE.relatorioProjeto.projeto = projeto;
+    APP_STATE.relatorioProjeto.tarefas = tarefasList;
+    APP_STATE.relatorioProjeto.expandedTarefaId = "";
+    APP_STATE.relatorioProjeto.cards = {
+      planejadas: planejadas,
+      backlog: backlog,
+      atrasadas: atrasadas,
+      metasPendentes: metasPendentes
+    };
+    setViewLoading(false);
+  }
+</script>

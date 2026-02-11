@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SAE — Sistema Apollo Enterprise</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --ink: #0f172a;
+        --muted: #475569;
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --border: #e2e8f0;
+        --accent: #0ea5a4;
+        --danger: #dc2626;
+        --warning: #d97706;
+        --success: #16a34a;
+        --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --radius: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Manrope", sans-serif;
+        background: radial-gradient(circle at 12% 12%, rgba(14, 165, 164, 0.12), transparent 40%),
+          radial-gradient(circle at 85% 5%, rgba(14, 165, 164, 0.1), transparent 36%),
+          var(--bg);
+        color: var(--ink);
+      }
+
+      .app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 260px;
+        background: #1d2f21;
+        color: white;
+        padding: 24px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .sidebar-profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .sidebar-profile img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        object-fit: cover;
+      }
+
+      .sidebar-profile .tagline {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+      }
+
+      .sidebar h1 {
+        margin: 0 0 18px;
+        font-size: 18px;
+      }
+
+      .nav-item {
+        padding: 12px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        margin-bottom: 6px;
+        transition: 0.2s;
+        font-weight: 600;
+      }
+
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .main {
+        flex: 1;
+        padding: 28px 30px 40px;
+        overflow-y: auto;
+      }
+
+      .header {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+
+      .subheader {
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+      }
+
+      .grid.cols-2 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.7;
+      }
+
+      .card p {
+        margin: 8px 0 0;
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+        background: var(--panel);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      th,
+      td {
+        padding: 14px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+
+      th {
+        background: #f1f5f9;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      tr.clickable {
+        cursor: pointer;
+      }
+
+      tr.clickable:hover {
+        background: #f8fafc;
+      }
+
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .badge.small {
+        font-size: 10px;
+        padding: 4px 8px;
+        letter-spacing: 0.03em;
+      }
+
+      .EM_DIA {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .PLANEJAMENTO {
+        background: #e2e8f0;
+        color: #475569;
+      }
+
+      .RISCO {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+
+      .ATRASO {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .CONCLUIDO {
+        background: #dbeafe;
+        color: #1e3a8a;
+      }
+
+      .EM_ANDAMENTO,
+      .CONCLUIDA {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .VENCENDO_SEMANA,
+      .PENDENTE_SEM_DATA {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+
+      .BACKLOG {
+        background: #e2e8f0;
+        color: #475569;
+      }
+
+      .ATRASADA {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .btn {
+        border: 1px solid var(--border);
+        background: var(--panel);
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        color: #ffffff;
+        border-color: transparent;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #e2e8f0;
+        color: var(--muted);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+
+      .kanban {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+
+      .kanban-col {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 12px;
+        border: 1px solid var(--border);
+      }
+
+      .kanban-card {
+        background: var(--panel);
+        border-radius: 12px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        margin-top: 10px;
+      }
+
+      .alert {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+        padding: 12px 14px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+      }
+
+      .modal-backdrop.show {
+        display: flex;
+      }
+
+      .modal {
+        width: min(560px, 92vw);
+        background: var(--panel);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .field label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .muted {
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      :root {
+        --sae-deep-blue: #020b24;
+        --sae-royal-blue: #0b1f5e;
+        --sae-indigo: #2b0f3a;
+        --sae-wine: #3a0b1e;
+        --sae-primary: #063096;
+        --sae-secondary: #576ca6;
+        --sae-accent: #7c96c3;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, var(--sae-deep-blue) 0%, var(--sae-royal-blue) 50%, var(--sae-indigo) 100%);
+        color: rgba(255, 255, 255, 0.92);
+        min-height: 100vh;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1rem;
+      }
+
+      .glass-sidebar {
+        background: rgba(2, 11, 36, 0.85);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .glass-header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(11, 31, 94, 0.7);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .nav-item-active {
+        background: linear-gradient(90deg, rgba(6, 48, 150, 0.4) 0%, rgba(87, 108, 166, 0.2) 100%);
+        border-left: 3px solid #7c96c3;
+        color: white !important;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+      select {
+        background-color: var(--sae-deep-blue);
+        color: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      select option {
+        background-color: var(--sae-deep-blue);
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+      .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #7c96c3;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 0.8s linear infinite;
+      }
+
+      .spinner-sm { width: 16px; height: 16px; border-width: 2px; }
+      .spinner-lg { width: 40px; height: 40px; border-width: 4px; }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .skeleton {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .skeleton-text { height: 16px; margin-bottom: 8px; }
+      .skeleton-title { height: 20px; width: 60%; margin-bottom: 12px; }
+      .skeleton-circle { border-radius: 50%; width: 40px; height: 40px; }
+      .skeleton-button { height: 40px; width: 100px; border-radius: 8px; }
+
+      .shimmer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shimmer 2s infinite;
+      }
+
+      @keyframes shimmer { to { left: 100%; } }
+
+      .animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .modal-backdrop.show {
+        display: flex;
+      }
+
+      .modal {
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
+      .modal-enter-active .modal-content, .modal-leave-active .modal-content { transition: transform 0.3s ease; }
+      .modal-enter-from, .modal-leave-to { opacity: 0; }
+      .modal-enter-from .modal-content { transform: scale(0.9) translateY(-20px); }
+      .modal-leave-to .modal-content { transform: scale(0.9) translateY(20px); }
+
+      [v-cloak] { display: none; }
+
+      .app {
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+      }
+
+      .sidebar {
+        background: rgba(2, 11, 36, 0.85);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .main {
+        flex: 1;
+        overflow-y: auto;
+        background: linear-gradient(135deg, rgba(2, 11, 36, 0.5) 0%, rgba(11, 31, 94, 0.3) 100%);
+      }
+
+      .main::-webkit-scrollbar { width: 6px; }
+      .main::-webkit-scrollbar-track { background: transparent; }
+      .main::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+
+      .nav-item.active { 
+        background: linear-gradient(90deg, rgba(6, 48, 150, 0.4) 0%, rgba(87, 108, 166, 0.2) 100%);
+        border-left: 3px solid #7c96c3;
+        color: white !important;
+      }
+
+      .card { 
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1rem;
+      }
+
+      .btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .btn.primary {
+        background: linear-gradient(135deg, rgba(6, 48, 150, 0.9), rgba(87, 108, 166, 0.9));
+        border-color: rgba(124, 150, 195, 0.6);
+        color: white;
+      }
+
+      table {
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      th {
+        color: #7c96c3;
+      }
+
+      table {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      th {
+        background: rgba(2, 11, 36, 0.65);
+      }
+
+      tr.clickable:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .kanban-col {
+        background: rgba(2, 11, 36, 0.55);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .kanban-card {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .pill {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .alert {
+        background: rgba(122, 63, 11, 0.35);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        background: rgba(2, 11, 36, 0.55);
+        color: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+      }
+
+      .subheader,
+      .field label {
+        color: #ffffff;
+      }
+
+
+      .view-wrap {
+        position: relative;
+        min-height: 60vh;
+      }
+
+      .view-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(2, 11, 36, 0.55);
+        backdrop-filter: blur(6px);
+        z-index: 50;
+      }
+
+      .modal-actions-content {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .vue-fallback {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(58, 11, 30, 0.8);
+        border: 1px solid rgba(124, 150, 195, 0.4);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        z-index: 200;
+        display: none;
+      }
+
+      .vue-fallback.show {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app" id="app" v-cloak>
+      <div class="sidebar">
+        <div class="sidebar-profile">
+          <img src="https://i.ibb.co/ns7PtQP4/logos-SAE.png" alt="Logo ER Consultoria" />
+          <div class="tagline">Suas escolhas, seus resultados</div>
+        </div>
+        <h1>SAE ERP</h1>
+        <div class="nav-item" data-route="empresas">Empresas</div>
+        <div class="nav-item" data-route="dashboard">Dashboard</div>
+        <div class="nav-item" data-route="relatorios">Relatorios</div>
+        <div class="sidebar-footer">ERP consultoria | Fluxo seguro</div>
+      </div>
+
+      <div class="main">
+        <div class="view-wrap">
+          <div class="view-loading" v-if="state.loading.view">
+            <div class="spinner spinner-lg"></div>
+            <div class="muted" style="margin-top: 12px;">Carregando...</div>
+          </div>
+          <div id="view">
+            <div v-if="state.view === 'projeto'">
+              <?!= include('ui/projetos.ui'); ?>
+            </div>
+
+            <div v-else-if="state.view === 'dashboard'">
+              <div class="header">Dashboard Executivo</div>
+              <div class="subheader">Visao CEO com alertas criticos e progresso global.</div>
+              <div class="field" style="max-width: 240px;">
+                <label>Empresa</label>
+                <select id="dashboardEmpresa" v-model="state.dashboard.empresaId" @change="actions.onDashboardEmpresaChange">
+                  <option value="">Todas</option>
+                  <option v-for="empresa in state.dashboard.empresas" :key="empresa.empresaId" :value="empresa.empresaId">
+                    {{ empresa.nomeFantasia || empresa.nomeRazao }}
+                  </option>
+                </select>
+              </div>
+
+              <div v-if="state.dashboard.banners.length">
+                <div class="alert" v-for="(banner, idx) in state.dashboard.banners" :key="idx">{{ banner }}</div>
+              </div>
+
+              <div class="grid">
+                <div class="card"><h3>Total empresas</h3><p>{{ state.dashboard.totalEmpresas }}</p></div>
+                <div class="card"><h3>Total projetos</h3><p>{{ state.dashboard.totalProjetos }}</p></div>
+                <div class="card"><h3>Progresso global</h3><p>{{ state.dashboard.progresso }}%</p></div>
+                <div class="card"><h3>Backlog sem data</h3><p>{{ state.dashboard.backlogSemData }}</p></div>
+                <div class="card"><h3>Atrasadas</h3><p>{{ state.dashboard.atrasadas }}</p></div>
+                <div class="card"><h3>Vencendo semana</h3><p>{{ state.dashboard.vencendoSemana }}</p></div>
+              </div>
+
+              <div class="grid cols-2" style="margin-top: 18px;">
+                <div class="card">
+                  <h3>Projetos em risco</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Projeto</th>
+                        <th>Empresa</th>
+                        <th>Status</th>
+                        <th>Pendencias</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="!state.dashboard.riscos.length"><td colspan="4">Sem riscos.</td></tr>
+                      <tr v-for="projeto in state.dashboard.riscos" :key="projeto.projetoId" class="clickable" @click="actions.goProjeto(projeto.empresaId, projeto.projetoId)">
+                        <td>{{ projeto.nomeProjeto }}</td>
+                        <td>{{ projeto.empresaNome }}</td>
+                        <td><span :class="actions.statusClass(projeto.statusCalc)">{{ actions.statusText(projeto.statusCalc) }}</span></td>
+                        <td>{{ projeto.atrasadas + projeto.vencendoSemana }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card">
+                  <h3>Projetos por fase</h3>
+                  <div class="kanban" style="margin-top: 12px;">
+                    <div class="kanban-col" v-for="(count, fase) in state.dashboard.fases" :key="fase">
+                      <strong>{{ fase }}</strong>
+                      <div class="pill" style="margin-top: 10px;">{{ count }} projetos</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="state.view === 'empresas'">
+              <div class="header">Empresas</div>
+              <div class="subheader">Clique para abrir detalhe e projetos.</div>
+              <div class="actions" style="justify-content: space-between; margin-bottom: 12px;">
+                <div></div>
+                <button class="btn primary" id="btnNovaEmpresa" @click="actions.openNovaEmpresa">Nova Empresa</button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Empresa</th>
+                    <th>Status</th>
+                    <th>Projetos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="!state.empresas.rows.length"><td colspan="3">Sem empresas.</td></tr>
+                  <tr v-for="row in state.empresas.rows" :key="row.empresaId" class="clickable" :data-empresa="row.empresaId" @click="actions.goEmpresa(row.empresaId)">
+                    <td>{{ row.nome }}</td>
+                    <td><span :class="actions.statusClass(row.statusCalc)">{{ actions.statusText(row.statusCalc) }}</span></td>
+                    <td>{{ row.totalProjetos }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div v-else-if="state.view === 'empresa'">
+              <div v-if="!state.empresaDetalhe.empresa">
+                <div class="header">Empresa</div>
+                <div class="muted">Empresa nao encontrada.</div>
+              </div>
+              <div v-else>
+                <div class="header">{{ state.empresaDetalhe.empresa.nomeFantasia || state.empresaDetalhe.empresa.nomeRazao }}</div>
+                <div class="subheader">{{ state.empresaDetalhe.empresa.cnpj || '' }}</div>
+                <div class="grid cols-2">
+                  <div class="card">
+                    <h3>Dados</h3>
+                    <p>{{ state.empresaDetalhe.empresa.nomeRazao || '-' }}</p>
+                    <div class="muted">{{ state.empresaDetalhe.empresa.telefone || 'Telefone nao informado' }}</div>
+                  </div>
+                  <div class="card">
+                    <h3>Status empresa</h3>
+                    <p>{{ state.empresaDetalhe.statusEmpresa }}</p>
+                    <div class="muted">Progresso: {{ state.empresaDetalhe.progressoEmpresa }}%</div>
+                  </div>
+                </div>
+                <div class="card" style="margin-top: 18px;">
+                  <div class="actions" style="justify-content: space-between;">
+                    <strong>Projetos</strong>
+                    <button class="btn primary" id="btnNovoProjeto" @click="actions.openNovoProjeto(state.empresaDetalhe.empresa.empresaId)">+ Novo Projeto com Checklist</button>
+                  </div>
+                  <div class="grid" style="margin-top: 12px;">
+                    <div v-if="!state.empresaDetalhe.projects.length" class="muted">Sem projetos.</div>
+                    <div class="card" v-for="projeto in state.empresaDetalhe.projects" :key="projeto.projetoId">
+                      <div class="muted">{{ projeto.nomeProjeto }}</div>
+                      <div style="margin-top: 6px;">
+                        <span :class="actions.statusClass(projeto.statusCalc)">{{ actions.statusText(projeto.statusCalc) }}</span>
+                        <span :class="actions.statusClass(projeto.faseAtual, true)">{{ actions.statusText(projeto.faseAtual) }}</span>
+                      </div>
+                      <div class="muted" style="margin-top: 6px;">Backlog: {{ projeto.backlog }}</div>
+                      <button class="btn" style="margin-top: 10px;" @click="actions.goKanban(state.empresaDetalhe.empresa.empresaId, projeto.projetoId)">Abrir</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div v-else-if="state.view === 'relatorios'">
+              <div style="position: sticky; top: 0; z-index: 10; background: rgba(2, 11, 36, 0.9); padding: 12px 0; margin-bottom: 12px;">
+                <div class="header">SAE — Sistema Apollo Enterprise</div>
+                <div class="subheader">Relatorio Executivo da Empresa</div>
+                <div class="muted" v-if="state.relatorio.empresaSelecionada">
+                  {{ state.relatorio.empresaSelecionada.nomeFantasia || state.relatorio.empresaSelecionada.nomeRazao }} — {{ state.relatorio.empresaSelecionada.cnpj || '-' }}
+                </div>
+                <div class="muted">Data: {{ state.relatorio.headerDate || '-' }}</div>
+                <div class="muted">Consultoria: Apollo Enterprise</div>
+                <div class="field" style="max-width: 260px; margin-top: 10px;">
+                  <label>Empresa</label>
+                  <select id="relatorioEmpresa" v-model="state.relatorio.empresaId" @change="actions.onRelatorioEmpresaChange">
+                    <option value="">Selecione</option>
+                    <option v-for="empresa in state.relatorio.empresas" :key="empresa.empresaId" :value="empresa.empresaId">
+                      {{ empresa.nomeFantasia || empresa.nomeRazao }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div v-if="state.relatorio.empresaId">
+                <div class="card">
+                  <strong>Secao 1 — KPIs CEO</strong>
+                  <div class="muted" style="margin-top: 6px;">Linha 1 (Visao macro)</div>
+                  <div class="grid" style="margin-top: 12px;">
+                    <div class="card">
+                      <h3>Projetos ativos</h3>
+                      <p>{{ state.relatorio.cards.projetosAtivos }}</p>
+                      <div class="muted">Regra: status != CONCLUIDO</div>
+                    </div>
+                    <div class="card">
+                      <h3>Progresso global</h3>
+                      <p>{{ state.relatorio.cards.progressoPlanejadoPercent }}%</p>
+                      <div class="muted">Regra: so tarefas planejadas</div>
+                    </div>
+                    <div class="card">
+                      <h3>Backlog sem data</h3>
+                      <p>{{ state.relatorio.cards.backlogSemData }}</p>
+                      <div class="muted">Regra: dataFim vazio</div>
+                    </div>
+                    <div class="card">
+                      <h3>Metas pendentes</h3>
+                      <p>{{ state.relatorio.cards.metasPendentes }}</p>
+                      <div class="muted">Regra: meta definida e resultado vazio</div>
+                    </div>
+                  </div>
+
+                  <div class="muted" style="margin-top: 14px;">Linha 2 (alertas)</div>
+                  <div class="grid" style="margin-top: 12px;">
+                    <div class="card">
+                      <h3>Tarefas atrasadas</h3>
+                      <p>{{ state.relatorio.cards.atrasadas }}</p>
+                    </div>
+                    <div class="card">
+                      <h3>Vencendo na semana</h3>
+                      <p>{{ state.relatorio.cards.vencendoSemana }}</p>
+                    </div>
+                    <div class="card">
+                      <h3>Projetos em risco</h3>
+                      <p>{{ state.relatorio.cards.projetosRisco }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card" style="margin-top: 18px;">
+                  <strong>Secao 2 — Projetos da Empresa</strong>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Projeto</th>
+                        <th>Fase Atual</th>
+                        <th>Status</th>
+                        <th>Planejadas</th>
+                        <th>Backlog</th>
+                        <th>Metas pendentes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="!state.relatorio.projetos.length"><td colspan="6">Sem projetos.</td></tr>
+                      <tr v-for="projeto in state.relatorio.projetos" :key="projeto.projetoId" class="clickable" @click="actions.goRelatorioProjeto(state.relatorio.empresaId, projeto.projetoId)">
+                        <td>{{ projeto.nomeProjeto }}</td>
+                        <td><span :class="actions.statusClass(projeto.faseAtual, true)">{{ actions.statusText(projeto.faseAtual) }}</span></td>
+                        <td><span :class="actions.statusClass(projeto.statusCalc)">{{ actions.statusText(projeto.statusCalc) }}</span></td>
+                        <td>{{ projeto.planejadas }}</td>
+                        <td>{{ projeto.backlog }}</td>
+                        <td>{{ projeto.metasPendentes }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="card" style="margin-top: 18px;">
+                  <strong>Secao 3 — Painel Metas (base KPI)</strong>
+                  <div class="muted" style="margin-top: 6px;">Metas Pendentes (consultoria)</div>
+                  <div v-if="state.relatorio.metasPendentes.length" style="margin-top: 10px;">
+                    <div v-for="meta in state.relatorio.metasPendentes" :key="meta.tarefaId">
+                      - [{{ meta.nomeProjeto }}] {{ meta.descricao }} -> sem resultado
+                    </div>
+                  </div>
+                  <div v-else class="muted" style="margin-top: 10px;">Sem metas pendentes.</div>
+                </div>
+              </div>
+              <div v-else class="muted" style="margin-top: 12px;">Selecione uma empresa para ver o relatorio.</div>
+            </div>
+
+            <div v-else-if="state.view === 'relatorio-projeto'">
+              <div style="position: sticky; top: 0; z-index: 10; background: rgba(2, 11, 36, 0.9); padding: 12px 0; margin-bottom: 12px;">
+                <div class="header">Projeto: {{ state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.nomeProjeto : '-' }}</div>
+                <div class="subheader">Empresa: {{ state.relatorioProjeto.empresaNome || '-' }}</div>
+                <div class="muted">Fase atual: {{ actions.statusText(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.faseAtual : '-') }}</div>
+                <div class="muted">Prazo final: {{ actions.formatDate(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.prazoFinal : '') }}</div>
+                <div class="muted">Status: <span :class="actions.statusClass(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.statusCalc : '')">{{ actions.statusText(state.relatorioProjeto.projeto ? state.relatorioProjeto.projeto.statusCalc : '-') }}</span></div>
+                <div class="actions" style="justify-content: flex-start; margin-top: 10px;">
+                  <button class="btn" @click="actions.goRelatoriosEmpresa">Voltar para relatorio da empresa</button>
+                </div>
+              </div>
+
+              <div class="card">
+                <strong>Secao 1 — Saude operacional</strong>
+                <div class="grid" style="margin-top: 12px;">
+                  <div class="card"><h3>Planejadas</h3><p>{{ state.relatorioProjeto.cards.planejadas }}</p></div>
+                  <div class="card"><h3>Backlog</h3><p>{{ state.relatorioProjeto.cards.backlog }}</p></div>
+                  <div class="card"><h3>Atrasadas</h3><p>{{ state.relatorioProjeto.cards.atrasadas }}</p></div>
+                  <div class="card"><h3>Metas pendentes</h3><p>{{ state.relatorioProjeto.cards.metasPendentes }}</p></div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-top: 18px;">
+                <strong>Secao 2 — Tarefas detalhadas (nucleo do produto)</strong>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tarefa</th>
+                      <th>Status</th>
+                      <th>Data fim</th>
+                      <th>Meta</th>
+                      <th>Resultado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="!state.relatorioProjeto.tarefas.length"><td colspan="5">Sem tarefas.</td></tr>
+                    <template v-for="tarefa in state.relatorioProjeto.tarefas" :key="tarefa.tarefaId">
+                      <tr class="clickable" @click="actions.toggleTarefaDetalhe(tarefa.tarefaId)">
+                        <td>{{ tarefa.descricao }}</td>
+                        <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
+                        <td>{{ actions.formatDate(tarefa.dataFim) }}</td>
+                        <td>{{ tarefa.metaTipo ? `Meta: ${actions.formatMeta(tarefa.metaTipo, tarefa.metaValor, tarefa.metaUnidade)}` : '-' }}</td>
+                        <td>{{ tarefa.resultado || '-' }}</td>
+                      </tr>
+                      <tr v-if="state.relatorioProjeto.expandedTarefaId === tarefa.tarefaId">
+                        <td colspan="5">
+                          <div class="card" style="margin-top: 10px;">
+                            <div class="muted"><strong>Detalhes</strong></div>
+                            <div style="margin-top: 6px;">{{ tarefa.detalhes || '-' }}</div>
+                            <div class="muted" style="margin-top: 10px;"><strong>Observação consultoria</strong></div>
+                            <div style="margin-top: 6px;">{{ tarefa.observacao || '-' }}</div>
+                            <div class="muted" style="margin-top: 10px;"><strong>Resultado entregue</strong></div>
+                            <div style="margin-top: 6px;">{{ tarefa.resultado || '-' }}</div>
+                            <div class="muted" style="margin-top: 10px;"><strong>Meta associada</strong></div>
+                            <div style="margin-top: 6px;">{{ tarefa.metaTipo ? `Tipo: ${tarefa.metaTipo} | Valor: ${tarefa.metaValor || '-'} | Unidade: ${tarefa.metaUnidade || '-'}` : '-' }}</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div v-else>
+              <div class="header">404</div>
+              <div class="muted">View nao encontrada.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="uiModalBackdrop" :class="{'show': state.uiModal.show}" v-show="state.uiModal.show">
+        <div class="modal">
+          <div class="actions" style="justify-content: space-between;">
+            <strong v-text="state.uiModal.title"></strong>
+          </div>
+          <div class="muted" style="margin-top: 12px;" v-text="state.uiModal.message"></div>
+          <div class="actions" style="margin-top: 18px;">
+            <button id="uiCancel" class="btn" v-if="state.uiModal.mode === 'confirm'" @click="actions.uiCancel" v-text="state.uiModal.cancelLabel"></button>
+            <button id="uiConfirm" class="btn primary" @click="actions.uiConfirm" v-text="state.uiModal.confirmLabel"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="modalBackdrop" :class="{'show': state.modal.show}" v-show="state.modal.show">
+      <div class="modal">
+        <div class="actions" style="justify-content: space-between;">
+          <strong id="modalTitle" v-text="state.modal.title"></strong>
+          <button class="btn" id="modalClose">Fechar</button>
+        </div>
+        <div id="modalBody">
+          <div v-if="state.modal.type === 'projeto'">
+            <div class="field">
+              <label>Nome do Projeto</label>
+              <input id="novoNome" />
+            </div>
+            <div class="field">
+              <label>Template</label>
+              <select id="novoTemplate">
+                <option v-for="tpl in state.modal.data.templates" :key="tpl" :value="tpl">{{ tpl }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Data Inicio</label>
+              <input id="novoInicio" type="date" />
+            </div>
+            <div class="field">
+              <label>Prazo Final</label>
+              <input id="novoPrazo" type="date" />
+            </div>
+            <div class="muted">Planejamento sera exigido antes de executar.</div>
+          </div>
+
+          <div v-else-if="state.modal.type === 'planejar'">
+            <div class="muted" style="margin-bottom: 10px;">Preencha data inicio e prazo final de cada tarefa.</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tarefa</th>
+                  <th>Inicio</th>
+                  <th>Fim</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="tarefa in state.modal.data.tarefas" :key="tarefa.tarefaId" :data-tarefa="tarefa.tarefaId">
+                  <td>{{ tarefa.descricao }}</td>
+                  <td><input type="date" data-field="dataInicio" :value="tarefa.dataInicio || ''"></td>
+                  <td><input type="date" data-field="dataFim" :value="tarefa.dataFim || ''"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-else-if="state.modal.type === 'empresa'">
+            <div class="field">
+              <label>Nome Razao</label>
+              <input id="empresaNomeRazao" />
+            </div>
+            <div class="field">
+              <label>Nome Fantasia</label>
+              <input id="empresaNomeFantasia" />
+            </div>
+            <div class="field">
+              <label>CNPJ</label>
+              <input id="empresaCnpj" />
+            </div>
+            <div class="field">
+              <label>Endereco</label>
+              <input id="empresaEndereco" />
+            </div>
+            <div class="field">
+              <label>Telefone</label>
+              <input id="empresaTelefone" />
+            </div>
+            <div class="field">
+              <label>Observacao</label>
+              <input id="empresaObservacao" />
+            </div>
+            <div class="field">
+              <label>Data inicio</label>
+              <input id="empresaInicio" type="date" />
+            </div>
+            <div class="field">
+              <label>Data fim prevista</label>
+              <input id="empresaFimPrevista" type="date" />
+            </div>
+          </div>
+
+          <div v-else-if="state.modal.type === 'tarefa'">
+            <div class="field">
+              <label>Fase</label>
+              <select id="tarefaFase">
+                <option v-for="fase in fasesOficiais" :key="fase" :value="fase" :selected="String((state.modal.data.tarefa && state.modal.data.tarefa.fase) || state.modal.data.faseAtual) === fase">{{ fase }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Descricao</label>
+              <input id="tarefaDescricao" :value="state.modal.data.tarefa ? state.modal.data.tarefa.descricao : ''" />
+            </div>
+            <div class="field">
+              <label>Meta</label>
+              <select id="tarefaMetaTipo" v-model="state.modal.data.metaTipo">
+                <option value="">Sem meta</option>
+                <option value="NUMERICA">Numerica</option>
+                <option value="PERCENTUAL">Percentual</option>
+                <option value="BOOLEAN">Boolean</option>
+                <option value="TEXTO">Texto</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Meta valor</label>
+              <input
+                id="tarefaMetaValor"
+                :type="state.modal.data.metaTipo === 'NUMERICA' || state.modal.data.metaTipo === 'PERCENTUAL' ? 'number' : 'text'"
+                :placeholder="state.modal.data.metaTipo === 'PERCENTUAL' ? 'Ex: 85' : (state.modal.data.metaTipo === 'BOOLEAN' ? 'true/false' : '')"
+                :value="state.modal.data.tarefa ? state.modal.data.tarefa.metaValor : ''"
+              />
+            </div>
+            <div class="field">
+              <label>Meta unidade</label>
+              <input id="tarefaMetaUnidade" :value="state.modal.data.tarefa ? state.modal.data.tarefa.metaUnidade : ''" />
+            </div>
+            <div class="field">
+              <label>Detalhes</label>
+              <textarea id="tarefaDetalhes" rows="3" :value="state.modal.data.tarefa ? state.modal.data.tarefa.detalhes : ''"></textarea>
+            </div>
+            <div class="field">
+              <label>Resultado</label>
+              <textarea id="tarefaResultado" rows="3" :value="state.modal.data.tarefa ? state.modal.data.tarefa.resultado : ''"></textarea>
+            </div>
+            <div class="field">
+              <label>Observacao</label>
+              <textarea id="tarefaObservacao" rows="3" :value="state.modal.data.tarefa ? state.modal.data.tarefa.observacao : ''"></textarea>
+            </div>
+            <div class="field">
+              <label>Data inicio</label>
+              <input id="tarefaInicio" type="date" :value="state.modal.data.tarefa ? state.modal.data.tarefa.dataInicio || '' : ''" />
+            </div>
+            <div class="field">
+              <label>Data fim</label>
+              <input id="tarefaFim" type="date" :value="state.modal.data.tarefa ? state.modal.data.tarefa.dataFim || '' : ''" />
+            </div>
+            <div class="field">
+              <label>Ordem</label>
+              <input id="tarefaOrdem" type="number" :value="state.modal.data.tarefa && state.modal.data.tarefa.ordem ? state.modal.data.tarefa.ordem : ''" />
+            </div>
+          </div>
+
+          <div v-else-if="state.modal.type === 'prazo'">
+            <div class="field">
+              <label>Data inicio</label>
+              <input id="prazoInicio" type="date" :value="state.modal.data.tarefa ? state.modal.data.tarefa.dataInicio || '' : ''" />
+            </div>
+            <div class="field">
+              <label>Data fim</label>
+              <input id="prazoFim" type="date" :value="state.modal.data.tarefa ? state.modal.data.tarefa.dataFim || '' : ''" />
+            </div>
+          </div>
+        </div>
+        <div class="actions" id="modalActions">
+          <div class="modal-actions-content">
+            <template v-if="state.modal.type === 'projeto'">
+              <button class="btn" id="btnCancelar">Cancelar</button>
+              <button class="btn primary" id="btnCriar">Criar</button>
+            </template>
+            <template v-else-if="state.modal.type === 'planejar'">
+              <button class="btn" id="btnCancelarPlanejar">Cancelar</button>
+              <button class="btn primary" id="btnSalvarPlanejar">Salvar</button>
+            </template>
+            <template v-else-if="state.modal.type === 'empresa'">
+              <button class="btn" id="btnCancelarEmpresa">Cancelar</button>
+              <button class="btn primary" id="btnSalvarEmpresa">Salvar</button>
+            </template>
+            <template v-else-if="state.modal.type === 'tarefa'">
+              <button class="btn" id="btnCancelarTarefa">Cancelar</button>
+              <button class="btn primary" id="btnSalvarTarefa">Salvar</button>
+            </template>
+            <template v-else-if="state.modal.type === 'prazo'">
+              <button class="btn" id="btnCancelarPrazo">Cancelar</button>
+              <button class="btn primary" id="btnSalvarPrazo">Salvar</button>
+            </template>
+          </div>
+          <div class="spinner spinner-sm" v-if="state.loading.modal"></div>
+        </div>
+      </div>
+    </div>
+
+      <div class="vue-fallback" id="vueFallback">
+      Vue nao inicializado. Verifique o carregamento da pagina.
+    </div>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <script>
+      window.SAE = {
+        state: {},
+        router: {},
+        exec: {},
+      };
+
+      const APP_STATE = Vue.reactive({
+        view: "empresas",
+        loading: { view: false, modal: false },
+        modal: { show: false, title: "", type: "", data: {} },
+        uiModal: {
+          show: false,
+          mode: "",
+          title: "",
+          message: "",
+          confirmLabel: "OK",
+          cancelLabel: "Cancelar",
+          resolve: null
+        },
+        paused: false,
+        vueReady: false,
+        relatorio: {
+          empresaId: "",
+          empresas: [],
+          empresaSelecionada: null,
+          headerDate: "",
+          projetos: [],
+          metasPendentes: [],
+          cards: {
+            projetosAtivos: 0,
+            progressoPlanejadoPercent: 0,
+            backlogSemData: 0,
+            metasPendentes: 0,
+            atrasadas: 0,
+            vencendoSemana: 0,
+            projetosRisco: 0
+          }
+        },
+        relatorioProjeto: {
+          empresaId: "",
+          empresaNome: "-",
+          projetoId: "",
+          projeto: null,
+          tarefas: [],
+          expandedTarefaId: "",
+          cards: {
+            planejadas: 0,
+            backlog: 0,
+            atrasadas: 0,
+            metasPendentes: 0
+          }
+        },
+        dashboard: {
+          empresaId: "",
+          empresas: [],
+          projetos: [],
+          topRisco: [],
+          resumoBase: {},
+          riscos: [],
+          fases: {},
+          banners: [],
+          totalEmpresas: 0,
+          totalProjetos: 0,
+          progresso: 0,
+          backlogSemData: 0,
+          atrasadas: 0,
+          vencendoSemana: 0
+        },
+        empresas: {
+          rows: []
+        },
+        empresaDetalhe: {
+          empresa: null,
+          projects: [],
+          statusEmpresa: "SEM_DADOS",
+          progressoEmpresa: 0
+        },
+        projeto: {
+          empresaId: "",
+          empresaNome: "-",
+          projeto: null,
+          fases: [],
+          faseAtual: "PLANEJAMENTO",
+          tarefas: [],
+          planejadas: 0,
+          backlog: 0,
+          atrasadas: 0,
+          vencendo: 0,
+          bloqueadoPlanejamento: false,
+          bloqueadoPendencias: false,
+          bloqueioMensagem: "",
+          mostrarPlanejar: false
+        }
+      });
+
+      const fasesOficiais = [
+        "PLANEJAMENTO",
+        "DIAGNOSTICO",
+        "IMPLANTACAO",
+        "MONITORAMENTO",
+        "ENCERRAMENTO",
+      ];
+
+      document.body.classList.toggle("paused", APP_STATE.paused);
+
+      function $(id) {
+        return document.getElementById(id);
+      }
+
+      function ensureOperational() {
+        console.log("[SAE] ensureOperational check, paused=", APP_STATE.paused);
+        if (APP_STATE.paused) {
+          SAE.ui.error("Operacao pausada", "Esta acao esta bloqueada durante implantacao.");
+          return false;
+        }
+        return true;
+      }
+
+      SAE.exec = async function ({ action, payload, confirmText }) {
+        console.log("[SAE][EXEC] Chamado com action=", action, "confirmText=", confirmText);
+        if (!action) {
+          console.log("[SAE][EXEC] ERRO: action vazio");
+          throw new Error("Action obrigatoria");
+        }
+
+        if (confirmText) {
+          console.log("[SAE][EXEC] Tem confirmText, abrindo modal de confirmacao...");
+          const ok = await SAE.ui.confirm(confirmText);
+          console.log("[SAE][EXEC] Modal de confirmacao retornou:", ok);
+          if (!ok) {
+            console.log("[SAE][EXEC] Usuario cancelou confirmacao");
+            return { cancelled: true };
+          }
+          console.log("[SAE][EXEC] Usuario confirmou, prosseguindo...");
+        }
+
+        console.log("[SAE][REQ]", action, payload);
+        console.log("[SAE][RUN] Chamando google.script.run.api_dispatch...");
+        return new Promise((resolve) => {
+          google.script.run
+            .withSuccessHandler((res) => {
+              console.log("[SAE][CALLBACK] Success", res);
+              console.log("[SAE][RES]", action, res);
+              resolve(res);
+            })
+            .withFailureHandler((err) => {
+              console.log("[SAE][CALLBACK] Failure", err);
+              console.error("[SAE][ERR]", action, err);
+              resolve({ ok: false, error: String(err) });
+            })
+            .api_dispatch(action, payload || {});
+        });
+      };
+
+
+      SAE.router.go = function (path) {
+        window.location.hash = path;
+      };
+
+      SAE.router.resolve = function () {
+        const hash = window.location.hash || "#/empresas";
+        const parts = hash.replace("#/", "").split("/");
+
+        document.querySelectorAll(".nav-item").forEach((item) => {
+          item.classList.toggle("active", item.dataset.route === parts[0]);
+        });
+
+        if (parts[0] === "empresas" && parts.length === 1) {
+          renderEmpresas();
+          return;
+        }
+
+        if (parts[0] === "empresa" && parts[1] && parts[2] === "projeto" && parts[3]) {
+          renderProjetoKanban(parts[1], parts[3]);
+          return;
+        }
+
+        if (parts[0] === "empresa" && parts[1]) {
+          renderEmpresaDetalhe(parts[1]);
+          return;
+        }
+
+        if (parts[0] === "dashboard") {
+          renderDashboard();
+          return;
+        }
+
+        if (parts[0] === "relatorios" && parts[1] === "projeto" && parts[2] && parts[3]) {
+          renderRelatorioProjeto(parts[2], parts[3]);
+          return;
+        }
+
+        if (parts[0] === "relatorios") {
+          renderRelatoriosEmpresa();
+          return;
+        }
+
+        renderNotFound();
+      };
+
+      window.addEventListener("hashchange", SAE.router.resolve);
+
+      function setView(viewName) {
+        APP_STATE.view = viewName || "empresas";
+      }
+
+      function setViewLoading(isLoading) {
+        APP_STATE.loading.view = !!isLoading;
+      }
+
+      function setModalLoading(isLoading) {
+        APP_STATE.loading.modal = !!isLoading;
+      }
+
+      function setModalState(type, title, data) {
+        APP_STATE.modal.type = type || "";
+        APP_STATE.modal.title = title || "";
+        APP_STATE.modal.data = data || {};
+      }
+
+      function openUiModal(config) {
+        console.log("[UI_MODAL] openUiModal chamado", config);
+        APP_STATE.uiModal.show = true;
+        APP_STATE.uiModal.mode = config.mode || "alert";
+        APP_STATE.uiModal.title = config.title || "";
+        APP_STATE.uiModal.message = config.message || "";
+        APP_STATE.uiModal.confirmLabel = config.confirmLabel || "OK";
+        APP_STATE.uiModal.cancelLabel = config.cancelLabel || "Cancelar";
+        APP_STATE.uiModal.resolve = typeof config.resolve === "function" ? config.resolve : null;
+        console.log("[UI_MODAL] Modal aberto, resolve=", typeof APP_STATE.uiModal.resolve);
+        console.log("[UI_MODAL] APP_STATE.uiModal.show=", APP_STATE.uiModal.show);
+        
+        // Debug: Verificar se Vue renderizou o modal no DOM
+        setTimeout(function() {
+          var backdrop = document.getElementById("uiModalBackdrop");
+          var btnConfirm = document.getElementById("uiConfirm");
+          var btnCancel = document.getElementById("uiCancel");
+          console.log("[UI_MODAL] DOM check: backdrop=", backdrop, "btnConfirm=", btnConfirm, "btnCancel=", btnCancel);
+          if (backdrop) {
+            console.log("[UI_MODAL] backdrop.style.display=", window.getComputedStyle(backdrop).display);
+          }
+        }, 100);
+      }
+
+      function closeUiModal(result) {
+        console.log("[UI_MODAL] closeUiModal chamado, result=", result);
+        var resolver = APP_STATE.uiModal.resolve;
+        console.log("[UI_MODAL] resolver type=", typeof resolver);
+        APP_STATE.uiModal.show = false;
+        APP_STATE.uiModal.mode = "";
+        APP_STATE.uiModal.title = "";
+        APP_STATE.uiModal.message = "";
+        APP_STATE.uiModal.confirmLabel = "OK";
+        APP_STATE.uiModal.cancelLabel = "Cancelar";
+        APP_STATE.uiModal.resolve = null;
+        if (typeof resolver === "function") {
+          console.log("[UI_MODAL] Resolvendo Promise com result=", result);
+          resolver(result);
+          console.log("[UI_MODAL] Promise resolvida");
+        } else {
+          console.log("[UI_MODAL] ERRO: resolver nao e funcao!");
+        }
+      }
+
+      SAE.ui = {
+        confirm: function (message) {
+          console.log("[SAE.ui] confirm() chamado, criando Promise...");
+          return new Promise(function (resolve) {
+            console.log("[SAE.ui] Promise criada, resolve=", typeof resolve);
+            openUiModal({
+              mode: "confirm",
+              title: "Confirmar acao",
+              message: message || "",
+              confirmLabel: "Confirmar",
+              cancelLabel: "Cancelar",
+              resolve: resolve
+            });
+          });
+        },
+        error: function (title, message) {
+          return new Promise(function (resolve) {
+            openUiModal({
+              mode: "alert",
+              title: title || "Erro",
+              message: message || "",
+              confirmLabel: "OK",
+              resolve: resolve
+            });
+          });
+        },
+        success: function (title, message) {
+          return new Promise(function (resolve) {
+            openUiModal({
+              mode: "alert",
+              title: title || "Operacao concluida",
+              message: message || "",
+              confirmLabel: "OK",
+              resolve: resolve
+            });
+          });
+        }
+      };
+
+      function afterModalRender(callback) {
+        setTimeout(function () {
+          if (typeof callback === "function") {
+            callback();
+          }
+        }, 0);
+      }
+
+      if (window.Vue && window.Vue.createApp) {
+        const app = window.Vue.createApp({
+          data() {
+            return {
+              state: APP_STATE,
+              fasesOficiais: fasesOficiais,
+              actions: {
+                uiConfirm: function () {
+                  console.log("[UI_MODAL] uiConfirm clicado");
+                  closeUiModal(true);
+                },
+                uiCancel: function () {
+                  console.log("[UI_MODAL] uiCancel clicado");
+                  closeUiModal(false);
+                },
+                goEmpresa: function (empresaId) {
+                  SAE.router.go(`#/empresa/${empresaId}`);
+                },
+                goProjeto: function (empresaId, projetoId) {
+                  var empresaSafe = empresaId;
+                  if (!empresaSafe) {
+                    var found = ensureList(APP_STATE.dashboard.projetos).filter(function (item) {
+                      return String(item.projetoId) === String(projetoId);
+                    })[0];
+                    empresaSafe = found ? found.empresaId : "";
+                  }
+                  if (!empresaSafe) {
+                    return;
+                  }
+                  SAE.router.go(`#/empresa/${empresaSafe}/projeto/${projetoId}`);
+                },
+                goKanban: function (empresaId, projetoId) {
+                  SAE.router.go(`#/empresa/${empresaId}/projeto/${projetoId}/kanban`);
+                },
+                goRelatorioProjeto: function (empresaId, projetoId) {
+                  SAE.router.go(`#/relatorios/projeto/${empresaId}/${projetoId}`);
+                },
+                goRelatoriosEmpresa: function () {
+                  SAE.router.go("#/relatorios");
+                },
+                openNovaEmpresa: function () {
+                  openEmpresaModal();
+                },
+                openNovoProjeto: function (empresaId) {
+                  openModalCriarProjeto(empresaId);
+                },
+                openPlanejar: function (empresaId, projetoId) {
+                  openPlanejarProjeto(empresaId, projetoId, APP_STATE.projeto.tarefas || []);
+                },
+                openTarefa: function (empresaId, projetoId, mode, tarefa, faseAtual) {
+                  openTarefaModal(empresaId, projetoId, mode, tarefa, faseAtual);
+                },
+                openPrazo: function (empresaId, projetoId, tarefa) {
+                  openPrazoModal(empresaId, projetoId, tarefa);
+                },
+                concluirTarefa: function (empresaId, projetoId, tarefaId) {
+                  concluirTarefa(empresaId, projetoId, tarefaId);
+                },
+                avancarFase: function (projetoId, empresaId) {
+                  if (!ensureOperational()) {
+                    return;
+                  }
+                  SAE.exec({
+                    action: "PROJETOS_AVANCAR_FASE",
+                    payload: { projetoId: projetoId },
+                    confirmText: "Confirmar avanço de fase?",
+                  }).then(function (res) {
+                    if (res && res.ok === false) {
+                      SAE.ui.error("Avancar Fase", res.error || "Nao foi possivel avancar");
+                      return;
+                    }
+                    renderProjetoKanban(empresaId, projetoId);
+                  });
+                },
+                onDashboardEmpresaChange: function () {
+                  renderDashboardContent(APP_STATE.dashboard.empresaId || "", APP_STATE.dashboard.resumoBase, APP_STATE.dashboard.topRisco, APP_STATE.dashboard.projetos);
+                },
+                onRelatorioEmpresaChange: function () {
+                  renderRelatoriosEmpresaContent(APP_STATE.relatorio.empresaId || "");
+                },
+                toggleTarefaDetalhe: function (tarefaId) {
+                  APP_STATE.relatorioProjeto.expandedTarefaId =
+                    APP_STATE.relatorioProjeto.expandedTarefaId === tarefaId ? "" : tarefaId;
+                },
+                statusText: function (status) {
+                  return normalizeStatus(status);
+                },
+                statusClass: function (status, small) {
+                  var size = small ? "small" : "";
+                  return `badge ${size} ${normalizeStatus(status)}`.trim();
+                },
+                formatDate: function (iso) {
+                  return formatDate(iso);
+                },
+                formatMeta: function (metaTipo, metaValor, metaUnidade) {
+                  if (!metaTipo) {
+                    return "-";
+                  }
+                  var tipo = String(metaTipo).toUpperCase();
+                  var valor = metaValor || "";
+                  var unidade = metaUnidade || "";
+                  if (tipo === "PERCENTUAL" && valor !== "") {
+                    return `${valor}%`;
+                  }
+                  if (unidade) {
+                    return `${valor} ${unidade}`.trim();
+                  }
+                  return String(valor || "-");
+                }
+              }
+            };
+          },
+          mounted() {
+            console.log("[SAE][MOUNT]", JSON.parse(JSON.stringify(APP_STATE)));
+          }
+        });
+
+        window.__SAE_APP__ = app;
+        app.mount("#app");
+        APP_STATE.vueReady = true;
+        
+        // Função de teste global para debug
+        window.testSAEExec = async function() {
+          console.log("[TEST] Iniciando teste direto de SAE.exec...");
+          try {
+            const result = await SAE.exec({
+              action: "TAREFAS_ATUALIZAR",
+              payload: { 
+                tarefaId: "T-0038", 
+                descricao: "TESTE DIRETO DO CONSOLE",
+                fase: "PLANEJAMENTO"
+              }
+            });
+            console.log("[TEST] Resultado:", result);
+            return result;
+          } catch (err) {
+            console.error("[TEST] Erro:", err);
+            return { ok: false, error: String(err) };
+          }
+        };
+        console.log("[SAE] Funcao de teste disponivel: window.testSAEExec()");
+      }
+
+      setTimeout(function () {
+        if (!APP_STATE.vueReady) {
+          console.error("[SAE][Vue] Vue nao inicializado", {
+            hasVue: !!window.Vue,
+            hasCreateApp: !!(window.Vue && window.Vue.createApp),
+            location: window.location.href,
+            stateView: APP_STATE.view
+          });
+          var fallback = $("vueFallback");
+          if (fallback) {
+            fallback.classList.add("show");
+          }
+        }
+      }, 1500);
+
+      function badge(status) {
+        const normalized = String(status || "SEM_STATUS").toUpperCase();
+        return `<span class="badge ${normalized}">${normalized}</span>`;
+      }
+
+      function badgeSmall(status) {
+        const normalized = String(status || "SEM_STATUS").toUpperCase();
+        return `<span class="badge small ${normalized}">${normalized}</span>`;
+      }
+
+      function normalizeStatus(status) {
+        return String(status || "SEM_STATUS").toUpperCase();
+      }
+
+      function formatDate(iso) {
+        if (!iso) {
+          return "-";
+        }
+        var raw = String(iso).trim();
+        var datePart = raw.indexOf("T") > -1 ? raw.split("T")[0] : raw;
+        const parts = datePart.split("-");
+        if (parts.length !== 3) {
+          return raw;
+        }
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+
+      function formatCnpj(value) {
+        var digits = String(value || "").replace(/\D/g, "").slice(0, 14);
+        return digits
+          .replace(/(\d{2})(\d)/, "$1.$2")
+          .replace(/(\d{3})(\d)/, "$1.$2")
+          .replace(/(\d{3})(\d)/, "$1/$2")
+          .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+      }
+
+      function formatPhone(value) {
+        var digits = String(value || "").replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 10) {
+          return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, function (_, d1, d2, d3) {
+            return d3 ? `(${d1}) ${d2}-${d3}` : `(${d1}) ${d2}`;
+          });
+        }
+        return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, function (_, d1, d2, d3) {
+          return d3 ? `(${d1}) ${d2}-${d3}` : `(${d1}) ${d2}`;
+        });
+      }
+
+      function ensureList(value) {
+        return Array.isArray(value) ? value : [];
+      }
+
+      function todayISO() {
+        return new Date().toISOString().slice(0, 10);
+      }
+
+      function calcEmpresaStatus(empresaId, projetos) {
+        const relacionados = (projetos || []).filter(
+          (projeto) => String(projeto.empresaId) === String(empresaId)
+        );
+        if (!relacionados.length) {
+          return "EM_DIA";
+        }
+        const statusList = relacionados.map((projeto) => String(projeto.statusCalc || "").toUpperCase());
+        if (statusList.every((status) => status === "CONCLUIDO")) {
+          return "CONCLUIDA";
+        }
+        if (statusList.some((status) => status === "ATRASO")) {
+          return "ATRASO";
+        }
+        if (statusList.some((status) => status === "RISCO")) {
+          return "RISCO";
+        }
+        return "EM_DIA";
+      }
+
+      async function renderDashboard() {
+        setView("dashboard");
+        setViewLoading(true);
+        const [resumoGeral, empresas, topRisco, projetos] = await Promise.all([
+          SAE.exec({ action: "DASHBOARD_RESUMO_GERAL", payload: {} }),
+          SAE.exec({ action: "EMPRESAS_LISTAR", payload: {} }),
+          SAE.exec({ action: "DASHBOARD_TOP_RISCO", payload: {} }),
+          SAE.exec({ action: "PROJETOS_LISTAR", payload: {} })
+        ]);
+
+        const resumoGeralSafe = resumoGeral && resumoGeral.ok === false ? {} : (resumoGeral || {});
+        const empresasList = ensureList(empresas);
+        const topRiscoList = ensureList(topRisco);
+        const projetosList = ensureList(projetos);
+
+        APP_STATE.dashboard.empresas = empresasList;
+        APP_STATE.dashboard.topRisco = topRiscoList;
+        APP_STATE.dashboard.projetos = projetosList;
+        APP_STATE.dashboard.resumoBase = resumoGeralSafe;
+        APP_STATE.dashboard.empresaId = "";
+
+        await renderDashboardContent("", resumoGeralSafe, topRiscoList, projetosList);
+        setViewLoading(false);
+      }
+
+      async function renderDashboardContent(empresaId, resumoGeral, topRisco, projetos) {
+        setViewLoading(true);
+        var resumo = resumoGeral;
+        var projetosBase = ensureList(projetos);
+        var modoEmpresa = !!empresaId;
+        if (modoEmpresa) {
+          resumo = await SAE.exec({ action: "DASHBOARD_RESUMO_EMPRESA", payload: { empresaId: empresaId } });
+          if (resumo && resumo.ok === false) {
+            resumo = {};
+          }
+          projetosBase = projetosBase.filter(function (projeto) {
+            return String(projeto.empresaId) === String(empresaId);
+          });
+        }
+
+        if (resumo && resumo.ok === false) {
+          resumo = {};
+        }
+
+        var backlogSemData = resumo.backlogSemData || 0;
+        var progresso = resumo.progressoGlobalPercent || resumo.progressoPercent || 0;
+        var tarefasPlanejadas = resumo.tarefasPlanejadas || 0;
+
+        var banners = [];
+        if (backlogSemData > 0) {
+          banners.push(`Existem ${backlogSemData} tarefas sem prazo. Planeje para ativar execucao.`);
+        }
+        if (tarefasPlanejadas > 0 && progresso === 0) {
+          banners.push("Execucao ainda nao comecou.");
+        }
+
+        var fases = fasesOficiais.reduce(function (acc, fase) {
+          acc[fase] = 0;
+          return acc;
+        }, {});
+        (projetosBase || []).forEach(function (projeto) {
+          var fase = String(projeto.faseAtual || "").toUpperCase();
+          if (fases.hasOwnProperty(fase)) {
+            fases[fase] += 1;
+          }
+        });
+
+        var topBase = ensureList(topRisco);
+        var projetosMap = {};
+        ensureList(projetos).forEach(function (projeto) {
+          projetosMap[String(projeto.projetoId)] = projeto.empresaId;
+        });
+        topBase = topBase.map(function (item) {
+          return Object.assign({}, item, {
+            empresaId: projetosMap[String(item.projetoId)] || ""
+          });
+        });
+        if (modoEmpresa) {
+          topBase = topBase.filter(function (item) {
+            var projeto = ensureList(projetos).filter(function (p) {
+              return String(p.projetoId) === String(item.projetoId);
+            })[0];
+            return projeto && String(projeto.empresaId) === String(empresaId);
+          });
+        }
+
+        APP_STATE.dashboard.empresaId = empresaId || "";
+        APP_STATE.dashboard.fases = fases;
+        APP_STATE.dashboard.banners = banners;
+        APP_STATE.dashboard.riscos = topBase;
+        APP_STATE.dashboard.totalEmpresas = resumo.totalEmpresas || (modoEmpresa ? 1 : (APP_STATE.dashboard.empresas.length || 0));
+        APP_STATE.dashboard.totalProjetos = resumo.totalProjetos || projetosBase.length || 0;
+        APP_STATE.dashboard.progresso = progresso;
+        APP_STATE.dashboard.backlogSemData = backlogSemData;
+        APP_STATE.dashboard.atrasadas = resumo.tarefasAtrasadas || resumo.atrasadas || 0;
+        APP_STATE.dashboard.vencendoSemana = resumo.tarefasVencendoSemana || resumo.vencendoSemana || 0;
+        setViewLoading(false);
+      }
+
+      async function renderEmpresas() {
+        setViewLoading(true);
+        setView("empresas");
+        const [empresas, projetos] = await Promise.all([
+          SAE.exec({ action: "EMPRESAS_LISTAR", payload: {} }),
+          SAE.exec({ action: "PROJETOS_LISTAR", payload: {} })
+        ]);
+
+        const empresasList = Array.isArray(empresas) ? empresas : [];
+        const projetosList = Array.isArray(projetos) ? projetos : [];
+
+        APP_STATE.empresas.rows = empresasList.map(function (empresa) {
+          var totalProjetos = projetosList.filter(function (projeto) {
+            return String(projeto.empresaId) === String(empresa.empresaId);
+          }).length;
+          var statusCalc = calcEmpresaStatus(empresa.empresaId, projetosList);
+          return {
+            empresaId: empresa.empresaId,
+            nome: empresa.nomeFantasia || empresa.nomeRazao,
+            statusCalc: statusCalc,
+            totalProjetos: totalProjetos
+          };
+        });
+        setViewLoading(false);
+      }
+
+      async function renderEmpresaDetalhe(empresaId) {
+        setViewLoading(true);
+        setView("empresa");
+        const [empresa, projetos, relatorio] = await Promise.all([
+          SAE.exec({ action: "EMPRESAS_OBTER", payload: { empresaId } }),
+          SAE.exec({ action: "PROJETOS_LISTAR_EMPRESA", payload: { empresaId } }),
+          SAE.exec({ action: "RELATORIO_EMPRESA", payload: { empresaId } }),
+        ]);
+
+        if (!empresa || empresa.ok === false) {
+          APP_STATE.empresaDetalhe.empresa = null;
+          APP_STATE.empresaDetalhe.projects = [];
+          APP_STATE.empresaDetalhe.statusEmpresa = "SEM_DADOS";
+          APP_STATE.empresaDetalhe.progressoEmpresa = 0;
+          setViewLoading(false);
+          return;
+        }
+
+        const projetosList = ensureList(projetos);
+
+        var relatorioSafe = relatorio && typeof relatorio === "object" ? relatorio : {};
+        if (relatorioSafe.ok === false) {
+          relatorioSafe = {};
+        }
+        var statusEmpresa = relatorioSafe.status || "SEM_DADOS";
+        var progressoEmpresa = Number.isFinite(relatorioSafe.progressoPercentual)
+          ? relatorioSafe.progressoPercentual
+          : 0;
+
+        var tarefasPorProjeto = {};
+        if (projetosList.length) {
+          var tarefasList = await Promise.all(
+            projetosList.map(function (projeto) {
+              return SAE.exec({
+                action: "TAREFAS_LISTAR_POR_PROJETO",
+                payload: { projetoId: projeto.projetoId }
+              });
+            })
+          );
+          projetosList.forEach(function (projeto, idx) {
+            tarefasPorProjeto[String(projeto.projetoId)] = ensureList(tarefasList[idx]);
+          });
+        }
+
+        APP_STATE.empresaDetalhe.empresa = empresa;
+        APP_STATE.empresaDetalhe.statusEmpresa = statusEmpresa;
+        APP_STATE.empresaDetalhe.progressoEmpresa = progressoEmpresa;
+        APP_STATE.empresaDetalhe.projects = projetosList.map(function (projeto) {
+          var tarefasProjeto = tarefasPorProjeto[String(projeto.projetoId)] || [];
+          var backlog = tarefasProjeto.filter(function (tarefa) {
+            return !tarefa.dataFim || String(tarefa.dataFim).trim() === "";
+          }).length;
+          return {
+            projetoId: projeto.projetoId,
+            nomeProjeto: projeto.nomeProjeto,
+            statusCalc: projeto.statusCalc,
+            faseAtual: projeto.faseAtual,
+            backlog: backlog
+          };
+        });
+        setViewLoading(false);
+      }
+
+      async function openModalCriarProjeto(empresaId) {
+        const templates = await SAE.exec({ action: "TEMPLATES_LISTAR", payload: {} });
+        const templatesList = ensureList(templates);
+        setModalState("projeto", "Novo Projeto com Checklist", { templates: templatesList });
+        openModal();
+
+        var criandoProjeto = false;
+
+        afterModalRender(function () {
+          var btnCancelar = $("btnCancelar");
+          var btnCriar = $("btnCriar");
+          if (!btnCancelar || !btnCriar) {
+            return;
+          }
+
+          btnCancelar.addEventListener("click", closeModal);
+          btnCriar.addEventListener("click", async () => {
+            if (!ensureOperational()) {
+              return;
+            }
+            if (criandoProjeto) {
+              return;
+            }
+
+            const payload = {
+              empresaId: empresaId,
+              nomeProjeto: $("novoNome").value,
+              modeloId: $("novoTemplate").value,
+              dataInicio: $("novoInicio").value,
+              prazoFinal: $("novoPrazo").value,
+            };
+
+            if (!payload.nomeProjeto || !payload.dataInicio || !payload.prazoFinal) {
+              await SAE.ui.error("Datas obrigatorias", "Preencha nome, data inicio e prazo final.");
+              return;
+            }
+
+            criandoProjeto = true;
+            btnCriar.setAttribute("disabled", "true");
+            btnCriar.textContent = "Criando...";
+            setModalLoading(true);
+
+            try {
+              const projeto = await SAE.exec({
+                action: "PROJETOS_CRIAR_TEMPLATE",
+                payload: payload,
+                confirmText: "Criar projeto com checklist?",
+              });
+              if (projeto && projeto.ok === false) {
+                setModalLoading(false);
+                await SAE.ui.error("Criar Projeto", projeto.error || "Nao foi possivel criar o projeto.");
+                return;
+              }
+              if (projeto && projeto.projetoId) {
+                closeModal();
+                SAE.router.go(`#/empresa/${empresaId}/projeto/${projeto.projetoId}`);
+              } else {
+                setModalLoading(false);
+                await SAE.ui.error("Criar Projeto", "Projeto criado, mas o retorno nao trouxe o ID.");
+              }
+            } finally {
+              criandoProjeto = false;
+              if (btnCriar) {
+                btnCriar.removeAttribute("disabled");
+                btnCriar.textContent = "Criar";
+              }
+              setModalLoading(false);
+            }
+          });
+        });
+      }
+
+      async function renderProjetoKanban(empresaId, projetoId) {
+        setViewLoading(true);
+        setView("projeto");
+        const [projeto, kanban, empresa] = await Promise.all([
+          SAE.exec({ action: "PROJETOS_OBTER", payload: { projetoId } }),
+          SAE.exec({ action: "PROJETOS_KANBAN", payload: { projetoId } }),
+          SAE.exec({ action: "EMPRESAS_OBTER", payload: { empresaId: empresaId } })
+        ]);
+
+        if (!projeto || projeto.ok === false) {
+          APP_STATE.projeto.projeto = null;
+          APP_STATE.projeto.empresaId = empresaId || "";
+          APP_STATE.projeto.empresaNome = "-";
+          setViewLoading(false);
+          return;
+        }
+
+        const kanbanSafe = kanban && kanban.ok === false ? { fases: [] } : (kanban || { fases: [] });
+        const empresaSafe = empresa && empresa.ok === false ? {} : (empresa || {});
+
+        const fases = fasesOficiais.map((fase) => {
+          const bucket = (kanbanSafe.fases || []).find((item) => item.nome === fase);
+          return { nome: fase, tarefas: (bucket && bucket.tarefas) || [] };
+        });
+
+        const faseAtual = String(projeto.faseAtual || "PLANEJAMENTO").toUpperCase();
+        const tarefasFaseAtual = fases.find((fase) => fase.nome === faseAtual)?.tarefas || [];
+        const pendentes = tarefasFaseAtual.filter(
+          (tarefa) => String(tarefa.statusCalc || "").toUpperCase() !== "CONCLUIDA"
+        );
+
+        const todasTarefas = fases.reduce(function (acc, fase) {
+          return acc.concat(fase.tarefas || []);
+        }, []);
+        const planejadas = todasTarefas.filter(function (tarefa) {
+          return tarefa.dataFim && String(tarefa.dataFim).trim() !== "";
+        });
+        const backlog = todasTarefas.filter(function (tarefa) {
+          return !tarefa.dataFim || String(tarefa.dataFim).trim() === "";
+        });
+        const atrasadas = todasTarefas.filter(function (tarefa) {
+          return String(tarefa.statusCalc || "").toUpperCase() === "ATRASADA";
+        });
+        const vencendo = todasTarefas.filter(function (tarefa) {
+          return String(tarefa.statusCalc || "").toUpperCase() === "VENCENDO_SEMANA";
+        });
+
+        const tarefasRows = todasTarefas.map(function (tarefa) {
+          return `
+            <tr data-tarefa="${tarefa.tarefaId}">
+              <td>${tarefa.descricao}</td>
+              <td>${badgeSmall(tarefa.fase)}</td>
+              <td>${badge(tarefa.statusCalc)}</td>
+              <td>${formatDate(tarefa.dataInicio)}</td>
+              <td>${formatDate(tarefa.dataFim)}</td>
+              <td>
+                <button class="btn" data-action="editar" data-id="${tarefa.tarefaId}">Editar</button>
+                <button class="btn" data-action="prazo" data-id="${tarefa.tarefaId}">Prazo</button>
+                <button class="btn" data-action="concluir" data-id="${tarefa.tarefaId}" ${
+                  String(tarefa.statusCalc || "").toUpperCase() === "CONCLUIDA" ? "disabled" : ""
+                }>Concluir</button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+
+        const bloqueadoPlanejamento = String(projeto.statusCalc || "").toUpperCase() === "PLANEJAMENTO";
+        const bloqueadoPendencias = pendentes.length > 0;
+        const bloqueioMensagem = bloqueadoPlanejamento
+          ? "Projeto nao planejado. Planeje antes de executar."
+          : bloqueadoPendencias
+            ? "Fase atual possui tarefas pendentes."
+            : "";
+
+        APP_STATE.projeto.empresaId = empresaId || "";
+        APP_STATE.projeto.empresaNome = empresaSafe.nomeFantasia || empresaSafe.nomeRazao || "-";
+        APP_STATE.projeto.projeto = projeto;
+        APP_STATE.projeto.fases = fases;
+        APP_STATE.projeto.faseAtual = faseAtual;
+        APP_STATE.projeto.tarefas = todasTarefas;
+        APP_STATE.projeto.planejadas = planejadas.length;
+        APP_STATE.projeto.backlog = backlog.length;
+        APP_STATE.projeto.atrasadas = atrasadas.length;
+        APP_STATE.projeto.vencendo = vencendo.length;
+        APP_STATE.projeto.bloqueadoPlanejamento = bloqueadoPlanejamento;
+        APP_STATE.projeto.bloqueadoPendencias = bloqueadoPendencias;
+        APP_STATE.projeto.bloqueioMensagem = bloqueioMensagem;
+        APP_STATE.projeto.mostrarPlanejar = String(projeto.statusCalc || "").toUpperCase() === "PLANEJAMENTO" && backlog.length > 0;
+        setViewLoading(false);
+      }
+
+      function renderNotFound() {
+        setViewLoading(false);
+        setView("notfound");
+      }
+
+      function openPlanejarProjeto(empresaId, projetoId, tarefas) {
+        setModalState("planejar", "Planejar Projeto", { tarefas: tarefas || [] });
+        openModal();
+
+        afterModalRender(function () {
+          var btnCancelar = $("btnCancelarPlanejar");
+          var btnSalvar = $("btnSalvarPlanejar");
+          if (!btnCancelar || !btnSalvar) {
+            return;
+          }
+
+          btnCancelar.addEventListener("click", closeModal);
+          btnSalvar.addEventListener("click", async () => {
+            if (!ensureOperational()) {
+              return;
+            }
+            if (btnSalvar.disabled) {
+              return;
+            }
+
+            var rows = Array.from($("modalBody").querySelectorAll("tr[data-tarefa]"));
+            var patches = [];
+            var hasError = false;
+            rows.forEach(function (row) {
+              var tarefaId = row.dataset.tarefa;
+              var dataInicio = row.querySelector("[data-field='dataInicio']").value || "";
+              var dataFim = row.querySelector("[data-field='dataFim']").value || "";
+              if (!dataInicio || !dataFim) {
+                hasError = true;
+                row.querySelectorAll("input").forEach(function (input) {
+                  input.style.borderColor = "#dc2626";
+                  input.style.backgroundColor = "#fee2e2";
+                });
+              }
+              patches.push({ tarefaId: tarefaId, dataInicio: dataInicio, dataFim: dataFim });
+            });
+            if (hasError) {
+              await SAE.ui.error("Datas obrigatorias", "Preencha data inicio e data fim para todas as tarefas.");
+              return;
+            }
+            btnSalvar.disabled = true;
+            btnSalvar.textContent = "Salvando...";
+            setModalLoading(true);
+
+            var planejarRes = await SAE.exec({
+              action: "PROJETOS_PLANEJAR",
+              payload: { projetoId: projetoId, tarefasPatch: patches },
+              confirmText: "Confirmar planejamento do projeto?"
+            });
+            if (planejarRes && planejarRes.ok === false) {
+              btnSalvar.disabled = false;
+              btnSalvar.textContent = "Salvar";
+              setModalLoading(false);
+              await SAE.ui.error("Planejamento do Projeto", planejarRes.error || "Nao foi possivel planejar o projeto.");
+              return;
+            }
+            closeModal();
+            renderProjetoKanban(empresaId, projetoId);
+          });
+        });
+      }
+
+      function openEmpresaModal() {
+        setModalState("empresa", "Nova Empresa", {});
+        openModal();
+
+        afterModalRender(function () {
+          var btnCancelar = $("btnCancelarEmpresa");
+          var btnSalvar = $("btnSalvarEmpresa");
+          var cnpjInput = $("empresaCnpj");
+          var telefoneInput = $("empresaTelefone");
+
+          if (!btnCancelar || !btnSalvar || !cnpjInput || !telefoneInput) {
+            return;
+          }
+
+          btnCancelar.addEventListener("click", closeModal);
+          cnpjInput.addEventListener("input", function () {
+            cnpjInput.value = formatCnpj(cnpjInput.value);
+          });
+          telefoneInput.addEventListener("input", function () {
+            telefoneInput.value = formatPhone(telefoneInput.value);
+          });
+
+          btnSalvar.addEventListener("click", async () => {
+            if (!ensureOperational()) {
+              return;
+            }
+            if (btnSalvar.disabled) {
+              return;
+            }
+            btnSalvar.disabled = true;
+            btnSalvar.textContent = "Salvando...";
+            setModalLoading(true);
+            var payload = {
+              nomeRazao: $("empresaNomeRazao").value,
+              nomeFantasia: $("empresaNomeFantasia").value,
+              cnpj: $("empresaCnpj").value,
+              endereco: $("empresaEndereco").value,
+              telefone: $("empresaTelefone").value,
+              observacao: $("empresaObservacao").value,
+              dataInicio: $("empresaInicio").value,
+              dataFimPrevista: $("empresaFimPrevista").value
+            };
+
+            if (!payload.nomeRazao || !payload.nomeFantasia || !payload.cnpj) {
+              await SAE.ui.error("Campo invalido", "Nome razao, nome fantasia e CNPJ sao obrigatorios.");
+              btnSalvar.disabled = false;
+              btnSalvar.textContent = "Salvar";
+              setModalLoading(false);
+              return;
+            }
+            var empresaRes = await SAE.exec({ action: "EMPRESAS_CRIAR", payload: payload });
+            if (empresaRes && empresaRes.ok === false) {
+              btnSalvar.disabled = false;
+              btnSalvar.textContent = "Salvar";
+              setModalLoading(false);
+              await SAE.ui.error("Salvar Empresa", empresaRes.error || "Falha ao salvar empresa.");
+              return;
+            }
+            closeModal();
+            renderEmpresas();
+          });
+        });
+      }
+
+      function openTarefaModal(empresaId, projetoId, mode, tarefa, faseAtual) {
+        console.log("[TAREFA] openTarefaModal chamado", { mode, tarefaId: tarefa ? tarefa.tarefaId : null });
+        var isEdit = mode === "editar";
+        setModalState("tarefa", isEdit ? "Editar Tarefa" : "Nova Tarefa", {
+          tarefa: tarefa || null,
+          faseAtual: faseAtual || "PLANEJAMENTO",
+          isEdit: isEdit,
+          metaTipo: tarefa && tarefa.metaTipo ? String(tarefa.metaTipo).toUpperCase() : ""
+        });
+        openModal();
+
+        afterModalRender(function () {
+          console.log("[TAREFA] afterModalRender callback disparado");
+          var btnCancelar = $("btnCancelarTarefa");
+          var btnSalvar = $("btnSalvarTarefa");
+          console.log("[TAREFA] btnSalvar=", btnSalvar, "btnCancelar=", btnCancelar);
+          if (!btnCancelar || !btnSalvar) {
+            console.log("[TAREFA] ERRO: botão não encontrado no DOM");
+            return;
+          }
+
+          btnCancelar.addEventListener("click", closeModal);
+          console.log("[TAREFA] addEventListener registrado para btnSalvar");
+          btnSalvar.addEventListener("click", async () => {
+            console.log("[TAREFA] CLICK btnSalvar disparado");
+            console.log("[TAREFA] btnSalvar.disabled=", btnSalvar.disabled, "btnSalvar.textContent=", btnSalvar.textContent);
+            console.log("[TAREFA] state.loading.modal=", APP_STATE.loading.modal);
+            try {
+              console.log("[TAREFA] Verificando ensureOperational...");
+              if (!ensureOperational()) {
+                console.log("[TAREFA] ensureOperational retornou false, abortando");
+                return;
+              }
+              console.log("[TAREFA] ensureOperational OK");
+              
+              if (btnSalvar.disabled) {
+                console.log("[TAREFA] Botão desabilitado, ignorando");
+                return;
+              }
+              console.log("[TAREFA] Botão habilitado, prosseguindo");
+
+              var payload = {
+                projetoId: projetoId,
+                fase: $("tarefaFase").value,
+                descricao: $("tarefaDescricao").value,
+                metaTipo: $("tarefaMetaTipo").value,
+                metaValor: $("tarefaMetaValor").value,
+                metaUnidade: $("tarefaMetaUnidade").value,
+                detalhes: $("tarefaDetalhes").value,
+                resultado: $("tarefaResultado").value,
+                observacao: $("tarefaObservacao").value,
+                dataInicio: $("tarefaInicio").value,
+                dataFim: $("tarefaFim").value,
+                ordem: $("tarefaOrdem").value
+              };
+              console.log("[TAREFA] Payload montado", payload);
+
+              if (!payload.fase) {
+                console.log("[TAREFA] Validação falhou: fase vazia");
+                await SAE.ui.error("Campo invalido", "Selecione uma fase valida antes de salvar.");
+                return;
+              }
+
+              if (!payload.descricao) {
+                console.log("[TAREFA] Validação falhou: descricao vazia");
+                await SAE.ui.error("Campo invalido", "Descricao obrigatoria.");
+                return;
+              }
+              console.log("[TAREFA] Validações OK");
+
+              btnSalvar.disabled = true;
+              btnSalvar.textContent = "Salvando...";
+              setModalLoading(true);
+              console.log("[TAREFA] Botão desabilitado, loading ativado");
+              console.log("[TAREFA] Iniciando SAE.exec, isEdit=", isEdit, "payload=", payload);
+
+              if (isEdit) {
+                console.log("[TAREFA] ATUALIZANDO tarefa", tarefa.tarefaId);
+                var tarefaRes = await SAE.exec({
+                  action: "TAREFAS_ATUALIZAR",
+                  payload: Object.assign({ tarefaId: tarefa.tarefaId }, payload),
+                  confirmText: "Confirmar atualização da tarefa?"
+                });
+              } else {
+                console.log("[TAREFA] CRIANDO nova tarefa");
+                var tarefaRes = await SAE.exec({
+                  action: "TAREFAS_CRIAR",
+                  payload: payload,
+                  confirmText: "Confirmar criação da tarefa?"
+                });
+              }
+              console.log("[TAREFA] SAE.exec retornou", tarefaRes);
+              if (tarefaRes && tarefaRes.ok === false) {
+                console.log("[TAREFA] Erro na API:", tarefaRes.error);
+                await SAE.ui.error("Salvar Tarefa", tarefaRes.error || "Nao foi possivel salvar a tarefa.");
+                return;
+              }
+              console.log("[TAREFA] Sucesso! Fechando modal e renderizando kanban");
+              closeModal();
+              renderProjetoKanban(empresaId, projetoId);
+            } finally {
+              btnSalvar.disabled = false;
+              btnSalvar.textContent = "Salvar";
+              setModalLoading(false);
+            }
+          });
+        });
+      }
+
+      function openPrazoModal(empresaId, projetoId, tarefa) {
+        setModalState("prazo", "Definir prazo", { tarefa: tarefa || null });
+        openModal();
+
+        afterModalRender(function () {
+          var btnCancelar = $("btnCancelarPrazo");
+          var btnSalvar = $("btnSalvarPrazo");
+          if (!btnCancelar || !btnSalvar) {
+            return;
+          }
+
+          btnCancelar.addEventListener("click", closeModal);
+          btnSalvar.addEventListener("click", async () => {
+            try {
+              if (!ensureOperational()) {
+                return;
+              }
+              if (btnSalvar.disabled) {
+                return;
+              }
+              btnSalvar.disabled = true;
+              btnSalvar.textContent = "Salvando...";
+              setModalLoading(true);
+
+              var prazoRes = await SAE.exec({
+                action: "TAREFAS_DEFINIR_PRAZO",
+                payload: { tarefaId: tarefa.tarefaId, dataInicio: $("prazoInicio").value, dataFim: $("prazoFim").value },
+                confirmText: "Confirmar definição de prazo?"
+              });
+              if (prazoRes && prazoRes.ok === false) {
+                await SAE.ui.error("Definir Prazo", prazoRes.error || "Nao foi possivel salvar o prazo.");
+                return;
+              }
+              closeModal();
+              renderProjetoKanban(empresaId, projetoId);
+            } finally {
+              btnSalvar.disabled = false;
+              btnSalvar.textContent = "Salvar";
+              setModalLoading(false);
+            }
+          });
+        });
+      }
+
+      async function concluirTarefa(empresaId, projetoId, tarefaId) {
+        if (!ensureOperational()) {
+          return;
+        }
+        if (APP_STATE.projeto.bloqueadoPlanejamento) {
+          await SAE.ui.error("Operacao bloqueada", "Projeto em planejamento. Conclusao bloqueada.");
+          return;
+        }
+        var concluirRes = await SAE.exec({
+          action: "TAREFAS_CONCLUIR",
+          payload: { tarefaId: tarefaId },
+          confirmText: "Confirmar conclusão da tarefa?"
+        });
+        if (concluirRes && concluirRes.ok === false) {
+          await SAE.ui.error("Concluir Tarefa", concluirRes.error || "Nao foi possivel concluir a tarefa.");
+          return;
+        }
+        renderProjetoKanban(empresaId, projetoId);
+      }
+
+      function openModal() {
+        APP_STATE.modal.show = true;
+        setModalLoading(false);
+        $("modalBackdrop").classList.add("show");
+      }
+
+      function closeModal() {
+        APP_STATE.modal.show = false;
+        APP_STATE.modal.type = "";
+        APP_STATE.modal.data = {};
+        setModalLoading(false);
+        $("modalBackdrop").classList.remove("show");
+      }
+
+      document.querySelectorAll(".nav-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          var route = "#/empresas";
+          if (item.dataset.route === "dashboard") {
+            route = "#/dashboard";
+          } else if (item.dataset.route === "relatorios") {
+            route = "#/relatorios";
+          }
+          SAE.router.go(route);
+        });
+      });
+
+      $("modalClose").addEventListener("click", closeModal);
+      $("modalBackdrop").addEventListener("click", (event) => {
+        if (event.target.id === "modalBackdrop") {
+          closeModal();
+        }
+      });
+
+      window.addEventListener("load", SAE.router.resolve);
+    </script>
+
+    <?!= include('relatorios'); ?>
+  </body>
+</html>

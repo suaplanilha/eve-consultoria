@@ -1,0 +1,92 @@
+<div v-if="!state.projeto.projeto">
+  <div class="header">Projeto</div>
+  <div class="muted">Projeto nao encontrado.</div>
+</div>
+<div v-else>
+  <div class="header">Projeto: {{ state.projeto.projeto.nomeProjeto }}</div>
+  <div class="subheader">Empresa: {{ state.projeto.empresaNome }}</div>
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="grid cols-2">
+      <div>
+        <div class="muted">Status</div>
+        <div><span :class="actions.statusClass(state.projeto.projeto.statusCalc)">{{ actions.statusText(state.projeto.projeto.statusCalc) }}</span></div>
+      </div>
+      <div>
+        <div class="muted">Fase Atual</div>
+        <div><span :class="actions.statusClass(state.projeto.faseAtual)">{{ actions.statusText(state.projeto.faseAtual) }}</span></div>
+      </div>
+      <div>
+        <div class="muted">Inicio</div>
+        <div>{{ actions.formatDate(state.projeto.projeto.dataInicio) }}</div>
+      </div>
+      <div>
+        <div class="muted">Prazo</div>
+        <div>{{ actions.formatDate(state.projeto.projeto.prazoFinal) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="actions" style="justify-content: space-between;">
+      <strong>Tarefas do projeto</strong>
+      <button class="btn" id="btnNovaTarefa" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'criar', null, state.projeto.faseAtual)">Nova tarefa</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Descricao</th>
+          <th>Fase</th>
+          <th>Status</th>
+          <th>Inicio</th>
+          <th>Fim</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="!state.projeto.tarefas.length"><td colspan="6">Sem tarefas.</td></tr>
+        <tr v-for="tarefa in state.projeto.tarefas" :key="tarefa.tarefaId" :data-tarefa="tarefa.tarefaId">
+          <td>{{ tarefa.descricao }}</td>
+          <td><span :class="actions.statusClass(tarefa.fase, true)">{{ actions.statusText(tarefa.fase) }}</span></td>
+          <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
+          <td>{{ actions.formatDate(tarefa.dataInicio) }}</td>
+          <td>{{ actions.formatDate(tarefa.dataFim) }}</td>
+          <td>
+            <button class="btn" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'editar', tarefa, state.projeto.faseAtual)">Editar</button>
+            <button class="btn" @click="actions.openPrazo(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa)">Prazo</button>
+            <button class="btn" :disabled="state.projeto.bloqueadoPlanejamento || actions.statusText(tarefa.statusCalc) === 'CONCLUIDA'" @click="actions.concluirTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa.tarefaId)">Concluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert" v-if="state.projeto.bloqueioMensagem">{{ state.projeto.bloqueioMensagem }}</div>
+  <div class="actions" style="justify-content: space-between; margin-bottom: 14px;">
+    <button class="btn" id="btnVoltar" @click="actions.goEmpresa(state.projeto.empresaId)">Voltar para empresa</button>
+    <div class="actions">
+      <button class="btn" id="btnPlanejar" v-if="state.projeto.mostrarPlanejar" @click="actions.openPlanejar(state.projeto.empresaId, state.projeto.projeto.projetoId)">Planejar Projeto</button>
+      <button class="btn" id="btnAbrirKanban" @click="actions.goKanban(state.projeto.empresaId, state.projeto.projeto.projetoId)">Abrir Kanban</button>
+      <button class="btn primary" id="btnAvancar" :disabled="state.projeto.bloqueadoPlanejamento || state.projeto.bloqueadoPendencias" @click="actions.avancarFase(state.projeto.projeto.projetoId, state.projeto.empresaId)">Avancar fase</button>
+    </div>
+  </div>
+  <div class="actions" style="justify-content: flex-start; gap: 8px; margin-bottom: 10px;">
+    <span class="pill">Planejadas: {{ state.projeto.planejadas }}</span>
+    <span class="pill">Backlog: {{ state.projeto.backlog }}</span>
+  </div>
+  <div class="kanban">
+    <div class="kanban-col" v-for="fase in state.projeto.fases" :key="fase.nome">
+      <strong>{{ fase.nome }}</strong>
+      <div class="muted" style="margin-top:8px;" v-if="!fase.tarefas.length">Sem tarefas</div>
+      <div class="kanban-card" v-for="tarefa in fase.tarefas" :key="tarefa.tarefaId">
+        <div>{{ tarefa.descricao }}</div>
+        <div class="muted" style="margin-top: 6px;"><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></div>
+        <div class="muted">{{ actions.formatDate(tarefa.dataFim) }}</div>
+        <div class="actions" style="justify-content: flex-start; margin-top: 8px;">
+          <button class="btn" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'editar', tarefa, state.projeto.faseAtual)">Editar</button>
+          <button class="btn" @click="actions.openPrazo(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa)">Prazo</button>
+          <button class="btn" :disabled="state.projeto.bloqueadoPlanejamento || actions.statusText(tarefa.statusCalc) === 'CONCLUIDA'" @click="actions.concluirTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa.tarefaId)">Concluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

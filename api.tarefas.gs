@@ -122,7 +122,14 @@ function api_concluirTarefa(tarefaId) {
     throw new Error("Projeto em planejamento. Conclusao bloqueada.");
   }
 
-  return repo_update("TAREFAS", tarefaId, {
+  var faseAtual = String(tarefa.fase || "").toUpperCase();
+  var patch = {
     dataConclusao: utils_todayISO()
-  });
+  };
+
+  if (faseAtual === "MONITORAMENTO") {
+    patch.fase = "ENCERRAMENTO";
+  }
+
+  return repo_update("TAREFAS", tarefaId, patch);
 }

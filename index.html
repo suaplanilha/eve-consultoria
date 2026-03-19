@@ -241,6 +241,10 @@
         background: #fee2e2;
         color: #991b1b;
       }
+      .INATIVA {
+        background: #e5e7eb;
+        color: #374151;
+      }
 
       .btn {
         border: 1px solid var(--border);
@@ -779,6 +783,16 @@
               <div v-else>
                 <div class="header">{{ state.empresaDetalhe.empresa.nomeFantasia || state.empresaDetalhe.empresa.nomeRazao }}</div>
                 <div class="subheader">{{ state.empresaDetalhe.empresa.cnpj || '' }}</div>
+                <div class="actions" style="justify-content: flex-end; margin-bottom: 10px;">
+                  <button class="btn" id="btnEditarEmpresa" @click="actions.openEditarEmpresa(state.empresaDetalhe.empresa)">Editar empresa</button>
+                  <button
+                    class="btn"
+                    id="btnInativarEmpresa"
+                    v-if="String(state.empresaDetalhe.empresa.status || 'ATIVA').toUpperCase() === 'ATIVA'"
+                    @click="actions.inativarEmpresa(state.empresaDetalhe.empresa.empresaId)">
+                    Inativar empresa
+                  </button>
+                </div>
                 <div class="grid cols-2">
                   <div class="card">
                     <h3>Dados</h3>
@@ -1084,6 +1098,13 @@
             <div class="field">
               <label>Data fim prevista</label>
               <input id="empresaFimPrevista" type="date" />
+            </div>
+            <div class="field">
+              <label>Status</label>
+              <select id="empresaStatus">
+                <option value="ATIVA" :selected="String(state.modal.data.status || 'ATIVA').toUpperCase() === 'ATIVA'">Ativa</option>
+                <option value="INATIVA" :selected="String(state.modal.data.status || '').toUpperCase() === 'INATIVA'">Inativa</option>
+              </select>
             </div>
           </div>
 
@@ -1547,7 +1568,13 @@
                   SAE.router.go("#/relatorios");
                 },
                 openNovaEmpresa: function () {
-                  openEmpresaModal();
+                  openEmpresaModal("criar");
+                },
+                openEditarEmpresa: function (empresa) {
+                  openEmpresaModal("editar", empresa);
+                },
+                inativarEmpresa: function (empresaId) {
+                  inativarEmpresa(empresaId);
                 },
                 openNovoProjeto: function (empresaId) {
                   openModalCriarProjeto(empresaId);
@@ -1720,7 +1747,11 @@
         return new Date().toISOString().slice(0, 10);
       }
 
-      function calcEmpresaStatus(empresaId, projetos) {
+      function calcEmpresaStatus(empresa, projetos) {
+        if (String((empresa && empresa.status) || "").toUpperCase() === "INATIVA") {
+          return "INATIVA";
+        }
+        const empresaId = empresa ? empresa.empresaId : "";
         const relacionados = (projetos || []).filter(
           (projeto) => String(projeto.empresaId) === String(empresaId)
         );
@@ -1854,7 +1885,7 @@
           var totalProjetos = projetosList.filter(function (projeto) {
             return String(projeto.empresaId) === String(empresa.empresaId);
           }).length;
-          var statusCalc = calcEmpresaStatus(empresa.empresaId, projetosList);
+          var statusCalc = calcEmpresaStatus(empresa, projetosList);
           return {
             empresaId: empresa.empresaId,
             nome: empresa.nomeFantasia || empresa.nomeRazao,
@@ -1890,6 +1921,9 @@
           relatorioSafe = {};
         }
         var statusEmpresa = relatorioSafe.status || "SEM_DADOS";
+        if (String(empresa.status || "").toUpperCase() === "INATIVA") {
+          statusEmpresa = "INATIVA";
+        }
         var progressoEmpresa = Number.isFinite(relatorioSafe.progressoPercentual)
           ? relatorioSafe.progressoPercentual
           : 0;
@@ -2158,8 +2192,20 @@
         });
       }
 
-      function openEmpresaModal() {
-        setModalState("empresa", "Nova Empresa", {});
+      function openEmpresaModal(mode, empresa) {
+        var isEdit = mode === "editar";
+        var empresaData = empresa || {};
+        setModalState("empresa", isEdit ? "Editar Empresa" : "Nova Empresa", {
+          nomeRazao: empresaData.nomeRazao || "",
+          nomeFantasia: empresaData.nomeFantasia || "",
+          cnpj: empresaData.cnpj || "",
+          endereco: empresaData.endereco || "",
+          telefone: empresaData.telefone || "",
+          observacao: empresaData.observacao || "",
+          dataInicio: empresaData.dataInicio || "",
+          dataFimPrevista: empresaData.dataFimPrevista || "",
+          status: empresaData.status || "ATIVA"
+        });
         openModal();
 
         afterModalRender(function () {
@@ -2171,6 +2217,16 @@
           if (!btnCancelar || !btnSalvar || !cnpjInput || !telefoneInput) {
             return;
           }
+
+          $("empresaNomeRazao").value = APP_STATE.modal.data.nomeRazao || "";
+          $("empresaNomeFantasia").value = APP_STATE.modal.data.nomeFantasia || "";
+          $("empresaCnpj").value = APP_STATE.modal.data.cnpj || "";
+          $("empresaEndereco").value = APP_STATE.modal.data.endereco || "";
+          $("empresaTelefone").value = APP_STATE.modal.data.telefone || "";
+          $("empresaObservacao").value = APP_STATE.modal.data.observacao || "";
+          $("empresaInicio").value = APP_STATE.modal.data.dataInicio || "";
+          $("empresaFimPrevista").value = APP_STATE.modal.data.dataFimPrevista || "";
+          $("empresaStatus").value = String(APP_STATE.modal.data.status || "ATIVA").toUpperCase();
 
           btnCancelar.addEventListener("click", closeModal);
           cnpjInput.addEventListener("input", function () {
@@ -2198,7 +2254,8 @@
               telefone: $("empresaTelefone").value,
               observacao: $("empresaObservacao").value,
               dataInicio: $("empresaInicio").value,
-              dataFimPrevista: $("empresaFimPrevista").value
+              dataFimPrevista: $("empresaFimPrevista").value,
+              status: $("empresaStatus").value
             };
 
             if (!payload.nomeRazao || !payload.nomeFantasia || !payload.cnpj) {
@@ -2208,7 +2265,15 @@
               setModalLoading(false);
               return;
             }
-            var empresaRes = await SAE.exec({ action: "EMPRESAS_CRIAR", payload: payload });
+            var empresaRes = null;
+            if (isEdit) {
+              empresaRes = await SAE.exec({
+                action: "EMPRESAS_ATUALIZAR",
+                payload: Object.assign({ empresaId: empresaData.empresaId }, payload)
+              });
+            } else {
+              empresaRes = await SAE.exec({ action: "EMPRESAS_CRIAR", payload: payload });
+            }
             if (empresaRes && empresaRes.ok === false) {
               btnSalvar.disabled = false;
               btnSalvar.textContent = "Salvar";
@@ -2217,9 +2282,29 @@
               return;
             }
             closeModal();
-            renderEmpresas();
+            if (isEdit && empresaData.empresaId) {
+              renderEmpresaDetalhe(empresaData.empresaId);
+            } else {
+              renderEmpresas();
+            }
           });
         });
+      }
+
+      async function inativarEmpresa(empresaId) {
+        if (!empresaId) {
+          return;
+        }
+        var res = await SAE.exec({
+          action: "EMPRESAS_ATUALIZAR",
+          payload: { empresaId: empresaId, status: "INATIVA" },
+          confirmText: "Confirmar inativacao da empresa?"
+        });
+        if (res && res.ok === false) {
+          await SAE.ui.error("Inativar empresa", res.error || "Nao foi possivel inativar a empresa.");
+          return;
+        }
+        await renderEmpresaDetalhe(empresaId);
       }
 
       function openTarefaModal(empresaId, projetoId, mode, tarefa, faseAtual) {

@@ -61,8 +61,6 @@ function api_criarTarefa(payload) {
 }
 
 function api_atualizarTarefa(tarefaId, payload) {
-  Logger.log("[API] api_atualizarTarefa chamado, tarefaId=" + tarefaId);
-  Logger.log("[API] payload=" + JSON.stringify(payload || {}));
   if (!tarefaId) {
     throw new Error("tarefaId obrigatorio");
   }
@@ -98,7 +96,6 @@ function api_atualizarTarefa(tarefaId, payload) {
     patch.semanaReferencia = utils_getSemanaReferencia(dataFim);
   }
 
-  Logger.log("[API] Chamando repo_update TAREFAS, patch=" + JSON.stringify(patch));
   return repo_update("TAREFAS", tarefaId, patch);
 }
 
@@ -128,11 +125,6 @@ function api_concluirTarefa(tarefaId) {
   var tarefa = repo_getById("TAREFAS", tarefaId);
   if (!tarefa) {
     throw new Error("Tarefa nao encontrada: " + tarefaId);
-  }
-
-  var projeto = repo_getById("PROJETOS", tarefa.projetoId);
-  if (!projeto) {
-    throw new Error("Projeto nao encontrado: " + tarefa.projetoId);
   }
 
   var patch = {

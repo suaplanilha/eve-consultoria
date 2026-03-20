@@ -171,7 +171,7 @@ function api_avancarFaseProjeto(projetoId) {
   }
 
   var tarefas = repo_getAll("TAREFAS").filter(function (tarefa) {
-    return String(tarefa.projetoId) === String(projetoId) && String(tarefa.fase) === faseAtual;
+    return String(tarefa.projetoId) === String(projetoId) && String(tarefa.fase || "").toUpperCase() === faseAtual;
   });
 
   var pendentes = tarefas.filter(function (tarefa) {

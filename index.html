@@ -1745,6 +1745,12 @@
         return Array.isArray(value) ? value : [];
       }
 
+      function sanitizeTarefas(list) {
+        return ensureList(list).filter(function (tarefa) {
+          return tarefa && typeof tarefa === "object";
+        });
+      }
+
       function todayISO() {
         return new Date().toISOString().slice(0, 10);
       }
@@ -1941,7 +1947,7 @@
             })
           );
           projetosList.forEach(function (projeto, idx) {
-            tarefasPorProjeto[String(projeto.projetoId)] = ensureList(tarefasList[idx]);
+            tarefasPorProjeto[String(projeto.projetoId)] = sanitizeTarefas(tarefasList[idx]);
           });
         }
 
@@ -1949,7 +1955,7 @@
         APP_STATE.empresaDetalhe.statusEmpresa = statusEmpresa;
         APP_STATE.empresaDetalhe.progressoEmpresa = progressoEmpresa;
         APP_STATE.empresaDetalhe.projects = projetosList.map(function (projeto) {
-          var tarefasProjeto = tarefasPorProjeto[String(projeto.projetoId)] || [];
+          var tarefasProjeto = sanitizeTarefas(tarefasPorProjeto[String(projeto.projetoId)]);
           var backlog = tarefasProjeto.filter(function (tarefa) {
             return !tarefa.dataFim || String(tarefa.dataFim).trim() === "";
           }).length;

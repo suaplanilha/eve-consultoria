@@ -134,3 +134,69 @@ function api_admin_sanearFasesTarefas(options) {
     detalhes: detalhes
   };
 }
+
+function api_admin_testarContratoFases() {
+  var checks = [];
+
+  function registrar(nome, ok, detalhe) {
+    checks.push({
+      nome: nome,
+      ok: !!ok,
+      detalhe: detalhe || ""
+    });
+  }
+
+  var acoesObrigatorias = [
+    "TAREFAS_CRIAR",
+    "TAREFAS_ATUALIZAR",
+    "PROJETOS_KANBAN",
+    "PROJETOS_AVANCAR_FASE"
+  ];
+
+  acoesObrigatorias.forEach(function (acao) {
+    registrar("acao_registrada_" + acao, !!(ACTIONS && ACTIONS[acao]), "router action");
+  });
+
+  var criarInvalido = api_dispatch("TAREFAS_CRIAR", {
+    projetoId: "P-CONTRATO",
+    fase: "FASE_INVALIDA",
+    descricao: "Contrato - fase invalida"
+  });
+  registrar(
+    "TAREFAS_CRIAR_rejeita_fase_invalida",
+    criarInvalido && criarInvalido.ok === false && String(criarInvalido.error || "").indexOf("fase invalida") !== -1,
+    criarInvalido && criarInvalido.error
+  );
+
+  var atualizarInvalido = api_dispatch("TAREFAS_ATUALIZAR", {
+    tarefaId: "T-CONTRATO",
+    fase: "FASE_INVALIDA"
+  });
+  registrar(
+    "TAREFAS_ATUALIZAR_rejeita_fase_invalida",
+    atualizarInvalido && atualizarInvalido.ok === false && String(atualizarInvalido.error || "").indexOf("fase invalida") !== -1,
+    atualizarInvalido && atualizarInvalido.error
+  );
+
+  var kanbanSemProjeto = api_dispatch("PROJETOS_KANBAN", {});
+  registrar(
+    "PROJETOS_KANBAN_exige_projetoId",
+    kanbanSemProjeto && kanbanSemProjeto.ok === false && String(kanbanSemProjeto.error || "").indexOf("projetoId obrigatorio") !== -1,
+    kanbanSemProjeto && kanbanSemProjeto.error
+  );
+
+  var avancarSemProjeto = api_dispatch("PROJETOS_AVANCAR_FASE", {});
+  registrar(
+    "PROJETOS_AVANCAR_FASE_exige_projetoId",
+    avancarSemProjeto && avancarSemProjeto.ok === false && String(avancarSemProjeto.error || "").indexOf("projetoId obrigatorio") !== -1,
+    avancarSemProjeto && avancarSemProjeto.error
+  );
+
+  var falhas = checks.filter(function (item) { return !item.ok; });
+  return {
+    ok: falhas.length === 0,
+    total: checks.length,
+    falhas: falhas.length,
+    checks: checks
+  };
+}

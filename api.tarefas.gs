@@ -1,3 +1,12 @@
+function api_tarefas_normalizeFase(fase) {
+  return String(fase || "").trim().toUpperCase();
+}
+
+function api_tarefas_isFaseOficial(fase) {
+  var fases = utils_getFasesOficiais() || [];
+  return fases.indexOf(api_tarefas_normalizeFase(fase)) !== -1;
+}
+
 function api_listarTarefasPorProjeto(projetoId) {
   if (!projetoId) {
     throw new Error("projetoId obrigatorio");
@@ -24,7 +33,10 @@ function api_criarTarefa(payload) {
     throw new Error(validation.errors.join(" | "));
   }
 
-  var fase = String(payload.fase || "").toUpperCase();
+  var fase = api_tarefas_normalizeFase(payload.fase);
+  if (!api_tarefas_isFaseOficial(fase)) {
+    throw new Error("fase invalida: " + payload.fase);
+  }
   var dataFim = payload.dataFim || "";
   var semana = dataFim ? utils_getSemanaReferencia(dataFim) : (payload.semanaReferencia || "");
   var metaTipo = payload.metaTipo ? String(payload.metaTipo).toUpperCase() : "";
@@ -61,9 +73,14 @@ function api_atualizarTarefa(tarefaId, payload) {
   }
 
   var dataFim = payload.dataFim;
+  var faseNormalizada = payload.fase !== undefined ? api_tarefas_normalizeFase(payload.fase) : payload.fase;
+  if (payload.fase !== undefined && !api_tarefas_isFaseOficial(faseNormalizada)) {
+    throw new Error("fase invalida: " + payload.fase);
+  }
+
   var patch = {
     projetoId: payload.projetoId,
-    fase: payload.fase ? String(payload.fase).toUpperCase() : payload.fase,
+    fase: faseNormalizada,
     descricao: payload.descricao,
     detalhes: payload.detalhes,
     resultado: payload.resultado,
@@ -122,7 +139,7 @@ function api_concluirTarefa(tarefaId) {
     throw new Error("Projeto em planejamento. Conclusao bloqueada.");
   }
 
-  var faseAtual = String(tarefa.fase || "").toUpperCase();
+  var faseAtual = api_tarefas_normalizeFase(tarefa.fase);
   var patch = {
     dataConclusao: utils_todayISO()
   };

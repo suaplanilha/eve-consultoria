@@ -135,14 +135,10 @@ function api_concluirTarefa(tarefaId) {
     throw new Error("Projeto nao encontrado: " + tarefa.projetoId);
   }
 
-  var faseAtual = api_tarefas_normalizeFase(tarefa.fase);
   var patch = {
-    dataConclusao: utils_todayISO()
+    dataConclusao: utils_todayISO(),
+    fase: "ENCERRAMENTO"
   };
-
-  if (faseAtual === "MONITORAMENTO") {
-    patch.fase = "ENCERRAMENTO";
-  }
 
   return repo_update("TAREFAS", tarefaId, patch);
 }

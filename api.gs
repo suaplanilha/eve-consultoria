@@ -14,56 +14,62 @@ function api_initDemo() {
 }
 
 function api_listEmpresas() {
-  return api_jsonSafe(api_empresas_listar());
+  return api_jsonSafe(api_listarEmpresas());
 }
 
 function api_getEmpresa(id) {
-  return api_jsonSafe(api_empresas_obter(id));
+  return api_jsonSafe(api_obterEmpresa(id));
 }
 
 function api_createEmpresa(payload) {
-  return api_jsonSafe(api_empresas_criar(payload));
+  return api_jsonSafe(api_criarEmpresa(payload));
 }
 
 function api_updateEmpresa(id, payload) {
-  return api_jsonSafe(api_empresas_atualizar(id, payload));
+  payload = payload || {};
+  payload.empresaId = id;
+  return api_jsonSafe(api_atualizarEmpresa(id, payload));
 }
 
 function api_deleteEmpresa(id) {
-  return api_jsonSafe(api_empresas_remover(id));
+  return api_jsonSafe(api_removerEmpresa(id));
 }
 
 function api_listProjetos() {
-  return api_jsonSafe(api_projetos_listar());
+  return api_jsonSafe(api_listarProjetos());
 }
 
 function api_listProjetosPorEmpresa(empresaId) {
-  return api_jsonSafe(api_projetos_listarPorEmpresa(empresaId));
+  return api_jsonSafe(api_listarProjetosPorEmpresa(empresaId));
 }
 
 function api_createProjeto(payload) {
-  return api_jsonSafe(api_projetos_criar(payload));
+  return api_jsonSafe(api_criarProjeto(payload));
 }
 
 function api_updateProjeto(id, payload) {
-  return api_jsonSafe(api_projetos_atualizar(id, payload));
+  payload = payload || {};
+  payload.projetoId = id;
+  return api_jsonSafe(api_atualizarProjeto(id, payload));
 }
 
 function api_listTarefasPorProjeto(projetoId) {
-  return api_jsonSafe(api_tarefas_listarPorProjeto(projetoId));
+  return api_jsonSafe(api_listarTarefasPorProjeto(projetoId));
 }
 
 function api_createTarefa(payload) {
-  return api_jsonSafe(api_tarefas_criar(payload));
+  return api_jsonSafe(api_criarTarefa(payload));
 }
 
 function api_updateTarefa(id, payload) {
-  return api_jsonSafe(api_tarefas_atualizar(id, payload));
+  payload = payload || {};
+  payload.tarefaId = id;
+  return api_jsonSafe(api_atualizarTarefa(id, payload));
 }
 
 
 function api_getKpisPorEmpresa() {
-  return api_jsonSafe(api_kpis_obterResumoPorEmpresa());
+  return api_jsonSafe(api_obterResumoGeral({}));
 }
 
 function api_listParametros() {

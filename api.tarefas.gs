@@ -1,3 +1,12 @@
+function api_tarefas_normalizeFase(fase) {
+  return String(fase || "").trim().toUpperCase();
+}
+
+function api_tarefas_isFaseOficial(fase) {
+  var fases = utils_getFasesOficiais() || [];
+  return fases.indexOf(api_tarefas_normalizeFase(fase)) !== -1;
+}
+
 function api_listarTarefasPorProjeto(projetoId) {
   if (!projetoId) {
     throw new Error("projetoId obrigatorio");
@@ -24,7 +33,10 @@ function api_criarTarefa(payload) {
     throw new Error(validation.errors.join(" | "));
   }
 
-  var fase = String(payload.fase || "").toUpperCase();
+  var fase = api_tarefas_normalizeFase(payload.fase);
+  if (!api_tarefas_isFaseOficial(fase)) {
+    throw new Error("fase invalida: " + payload.fase);
+  }
   var dataFim = payload.dataFim || "";
   var semana = dataFim ? utils_getSemanaReferencia(dataFim) : (payload.semanaReferencia || "");
   var metaTipo = payload.metaTipo ? String(payload.metaTipo).toUpperCase() : "";
@@ -49,8 +61,6 @@ function api_criarTarefa(payload) {
 }
 
 function api_atualizarTarefa(tarefaId, payload) {
-  Logger.log("[API] api_atualizarTarefa chamado, tarefaId=" + tarefaId);
-  Logger.log("[API] payload=" + JSON.stringify(payload || {}));
   if (!tarefaId) {
     throw new Error("tarefaId obrigatorio");
   }
@@ -61,9 +71,14 @@ function api_atualizarTarefa(tarefaId, payload) {
   }
 
   var dataFim = payload.dataFim;
+  var faseNormalizada = payload.fase !== undefined ? api_tarefas_normalizeFase(payload.fase) : payload.fase;
+  if (payload.fase !== undefined && !api_tarefas_isFaseOficial(faseNormalizada)) {
+    throw new Error("fase invalida: " + payload.fase);
+  }
+
   var patch = {
     projetoId: payload.projetoId,
-    fase: payload.fase ? String(payload.fase).toUpperCase() : payload.fase,
+    fase: faseNormalizada,
     descricao: payload.descricao,
     detalhes: payload.detalhes,
     resultado: payload.resultado,
@@ -81,7 +96,6 @@ function api_atualizarTarefa(tarefaId, payload) {
     patch.semanaReferencia = utils_getSemanaReferencia(dataFim);
   }
 
-  Logger.log("[API] Chamando repo_update TAREFAS, patch=" + JSON.stringify(patch));
   return repo_update("TAREFAS", tarefaId, patch);
 }
 
@@ -113,16 +127,10 @@ function api_concluirTarefa(tarefaId) {
     throw new Error("Tarefa nao encontrada: " + tarefaId);
   }
 
-  var projeto = repo_getById("PROJETOS", tarefa.projetoId);
-  if (!projeto) {
-    throw new Error("Projeto nao encontrado: " + tarefa.projetoId);
-  }
+  var patch = {
+    dataConclusao: utils_todayISO(),
+    fase: "ENCERRAMENTO"
+  };
 
-  if (String(projeto.faseAtual || "").toUpperCase() === "PLANEJAMENTO") {
-    throw new Error("Projeto em planejamento. Conclusao bloqueada.");
-  }
-
-  return repo_update("TAREFAS", tarefaId, {
-    dataConclusao: utils_todayISO()
-  });
+  return repo_update("TAREFAS", tarefaId, patch);
 }

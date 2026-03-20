@@ -5,6 +5,7 @@ function api_listarEmpresas() {
     Object.keys(empresa || {}).forEach(function (key) {
       normalized[key] = empresa[key];
     });
+    normalized.status = normalized.status ? String(normalized.status).toUpperCase() : "ATIVA";
     normalized.dataInicio = utils_normalizeDate(empresa.dataInicio);
     normalized.dataFimPrevista = utils_normalizeDate(empresa.dataFimPrevista);
     return normalized;
@@ -23,6 +24,7 @@ function api_obterEmpresa(empresaId) {
   Object.keys(empresa || {}).forEach(function (key) {
     normalized[key] = empresa[key];
   });
+  normalized.status = normalized.status ? String(normalized.status).toUpperCase() : "ATIVA";
   normalized.dataInicio = utils_normalizeDate(empresa.dataInicio);
   normalized.dataFimPrevista = utils_normalizeDate(empresa.dataFimPrevista);
   return normalized;
@@ -42,7 +44,8 @@ function api_criarEmpresa(payload) {
     telefone: payload.telefone || "",
     observacao: payload.observacao || "",
     dataInicio: payload.dataInicio || "",
-    dataFimPrevista: payload.dataFimPrevista || ""
+    dataFimPrevista: payload.dataFimPrevista || "",
+    status: payload.status ? String(payload.status).toUpperCase() : "ATIVA"
   });
 }
 
@@ -64,7 +67,8 @@ function api_atualizarEmpresa(empresaId, payload) {
     telefone: payload.telefone,
     observacao: payload.observacao,
     dataInicio: payload.dataInicio,
-    dataFimPrevista: payload.dataFimPrevista
+    dataFimPrevista: payload.dataFimPrevista,
+    status: payload.status ? String(payload.status).toUpperCase() : payload.status
   });
 }
 

@@ -2410,6 +2410,10 @@
                 });
               }
               console.log("[TAREFA] SAE.exec retornou", tarefaRes);
+              if (tarefaRes && tarefaRes.cancelled) {
+                console.log("[TAREFA] Operacao cancelada pelo usuario.");
+                return;
+              }
               if (tarefaRes && tarefaRes.ok === false) {
                 console.log("[TAREFA] Erro na API:", tarefaRes.error);
                 await SAE.ui.error("Salvar Tarefa", tarefaRes.error || "Nao foi possivel salvar a tarefa.");
@@ -2475,15 +2479,14 @@
         if (!ensureOperational()) {
           return;
         }
-        if (APP_STATE.projeto.bloqueadoPlanejamento) {
-          await SAE.ui.error("Operacao bloqueada", "Projeto em planejamento. Conclusao bloqueada.");
-          return;
-        }
         var concluirRes = await SAE.exec({
           action: "TAREFAS_CONCLUIR",
           payload: { tarefaId: tarefaId },
           confirmText: "Confirmar conclusão da tarefa?"
         });
+        if (concluirRes && concluirRes.cancelled) {
+          return;
+        }
         if (concluirRes && concluirRes.ok === false) {
           await SAE.ui.error("Concluir Tarefa", concluirRes.error || "Nao foi possivel concluir a tarefa.");
           return;

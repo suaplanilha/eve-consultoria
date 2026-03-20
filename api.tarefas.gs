@@ -135,10 +135,6 @@ function api_concluirTarefa(tarefaId) {
     throw new Error("Projeto nao encontrado: " + tarefa.projetoId);
   }
 
-  if (String(projeto.faseAtual || "").toUpperCase() === "PLANEJAMENTO") {
-    throw new Error("Projeto em planejamento. Conclusao bloqueada.");
-  }
-
   var faseAtual = api_tarefas_normalizeFase(tarefa.fase);
   var patch = {
     dataConclusao: utils_todayISO()

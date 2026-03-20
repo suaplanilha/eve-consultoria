@@ -46,3 +46,91 @@ function api_admin_definirParametro(chave, valor) {
     valor: valor
   };
 }
+
+function api_admin_normalizeFaseAlias(fase) {
+  var base = String(fase || "").trim().toUpperCase();
+  if (!base) {
+    return "";
+  }
+
+  var semAcento = base.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  var alias = {
+    PLANEAMENTO: "PLANEJAMENTO",
+    DIAGNOSTICO: "DIAGNOSTICO",
+    DIAGNOSTICO_INICIAL: "DIAGNOSTICO",
+    IMPLANTACAO: "IMPLANTACAO",
+    IMPLEMENTACAO: "IMPLANTACAO",
+    MONITORACAO: "MONITORAMENTO",
+    MONITORAMENTO: "MONITORAMENTO",
+    ENCERRAMENTO: "ENCERRAMENTO",
+    FECHAMENTO: "ENCERRAMENTO"
+  };
+
+  return alias[semAcento] || semAcento;
+}
+
+function api_admin_sanearFasesTarefas(options) {
+  var opts = options || {};
+  var dryRun = opts.dryRun !== false;
+  var tarefas = repo_getAll("TAREFAS") || [];
+  var fasesOficiais = utils_getFasesOficiais() || [];
+  var fasesMap = {};
+  fasesOficiais.forEach(function (fase) {
+    fasesMap[String(fase)] = true;
+  });
+
+  var alteradas = 0;
+  var invalidas = 0;
+  var mantidas = 0;
+  var detalhes = [];
+
+  tarefas.forEach(function (tarefa) {
+    if (!tarefa || !tarefa.tarefaId) {
+      return;
+    }
+
+    var faseOriginal = String(tarefa.fase || "");
+    var faseNormalizada = api_admin_normalizeFaseAlias(faseOriginal);
+
+    if (!fasesMap[faseNormalizada]) {
+      invalidas += 1;
+      detalhes.push({
+        tarefaId: tarefa.tarefaId,
+        faseOriginal: faseOriginal,
+        faseNova: faseNormalizada,
+        status: "INVALIDA"
+      });
+      return;
+    }
+
+    var faseAtualNormalizada = String(faseOriginal || "").trim().toUpperCase();
+    if (faseAtualNormalizada === faseNormalizada) {
+      mantidas += 1;
+      return;
+    }
+
+    alteradas += 1;
+    detalhes.push({
+      tarefaId: tarefa.tarefaId,
+      faseOriginal: faseOriginal,
+      faseNova: faseNormalizada,
+      status: dryRun ? "DRY_RUN" : "ATUALIZADA"
+    });
+
+    if (!dryRun) {
+      repo_update("TAREFAS", tarefa.tarefaId, { fase: faseNormalizada });
+      repo_log("DATA_FIX", "TAREFAS", tarefa.tarefaId, "fase: " + faseOriginal + " -> " + faseNormalizada);
+    }
+  });
+
+  return {
+    ok: true,
+    dryRun: dryRun,
+    total: tarefas.length,
+    alteradas: alteradas,
+    mantidas: mantidas,
+    invalidas: invalidas,
+    fasesOficiais: fasesOficiais,
+    detalhes: detalhes
+  };
+}

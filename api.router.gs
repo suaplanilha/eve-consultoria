@@ -2,6 +2,7 @@ var ACTIONS = {
   HEALTH: true,
   HEALTHCHECK: true,
   INIT_DEMO: true,
+  ADMIN_SANEAR_FASES_TAREFAS: true,
   EMPRESAS_LISTAR: true,
   EMPRESAS_OBTER: true,
   EMPRESAS_CRIAR: true,
@@ -53,6 +54,9 @@ function api_dispatch(action, payload) {
 
       case "INIT_DEMO":
         result = api_admin_initDemo();
+        break;
+      case "ADMIN_SANEAR_FASES_TAREFAS":
+        result = api_admin_sanearFasesTarefas(data);
         break;
 
       case "EMPRESAS_LISTAR":

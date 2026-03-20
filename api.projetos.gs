@@ -1,3 +1,7 @@
+function api_normalizeFaseValue(fase) {
+  return String(fase || "").trim().toUpperCase();
+}
+
 function api_listarProjetos() {
   return repo_getAll("PROJETOS");
 }
@@ -159,7 +163,7 @@ function api_avancarFaseProjeto(projetoId) {
   }
 
   var fases = utils_getFasesOficiais();
-  var faseAtual = String(projeto.faseAtual || "PLANEJAMENTO").toUpperCase();
+  var faseAtual = api_normalizeFaseValue(projeto.faseAtual || "PLANEJAMENTO");
   var indiceAtual = fases.indexOf(faseAtual);
 
   if (indiceAtual === -1) {
@@ -171,7 +175,7 @@ function api_avancarFaseProjeto(projetoId) {
   }
 
   var tarefas = repo_getAll("TAREFAS").filter(function (tarefa) {
-    return String(tarefa.projetoId) === String(projetoId) && String(tarefa.fase || "").toUpperCase() === faseAtual;
+    return String(tarefa.projetoId) === String(projetoId) && api_normalizeFaseValue(tarefa.fase) === faseAtual;
   });
 
   var pendentes = tarefas.filter(function (tarefa) {
@@ -193,14 +197,45 @@ function api_obterKanbanProjeto(projetoId) {
   }
 
   var fasesOficiais = utils_getFasesOficiais();
+  var fasesOficiaisMap = {};
+  (fasesOficiais || []).forEach(function (fase) {
+    fasesOficiaisMap[String(fase)] = true;
+  });
 
   var tarefas = repo_getAll("TAREFAS").filter(function (tarefa) {
     return String(tarefa.projetoId) === String(projetoId);
   });
 
+  var contagemFaseOriginal = {};
+  var contagemFaseNormalizada = {};
+  var descartadasFaseInvalida = 0;
+
+  tarefas.forEach(function (tarefa) {
+    var faseOriginal = String(tarefa && tarefa.fase || "").trim();
+    var faseOriginalKey = faseOriginal || "(VAZIA)";
+    contagemFaseOriginal[faseOriginalKey] = (contagemFaseOriginal[faseOriginalKey] || 0) + 1;
+
+    var faseNormalizada = api_normalizeFaseValue(tarefa && tarefa.fase);
+    var faseNormKey = faseNormalizada || "(VAZIA)";
+    contagemFaseNormalizada[faseNormKey] = (contagemFaseNormalizada[faseNormKey] || 0) + 1;
+
+    if (!fasesOficiaisMap[faseNormalizada]) {
+      descartadasFaseInvalida += 1;
+    }
+  });
+
+  Logger.log(
+    "[KANBAN] projetoId=%s total=%s faseOriginal=%s faseNormalizada=%s descartadasFaseInvalida=%s",
+    projetoId,
+    tarefas.length,
+    JSON.stringify(contagemFaseOriginal),
+    JSON.stringify(contagemFaseNormalizada),
+    descartadasFaseInvalida
+  );
+
   var fases = fasesOficiais.map(function (fase) {
     var tasks = tarefas.filter(function (tarefa) {
-      return String(tarefa.fase) === fase;
+      return api_normalizeFaseValue(tarefa.fase) === fase;
     });
 
     tasks = tasks.map(function (tarefa) {

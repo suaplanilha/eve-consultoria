@@ -1,4 +1,10 @@
 <script>
+  function sanitizeTarefas(list) {
+    return ensureList(list).filter(function (tarefa) {
+      return tarefa && typeof tarefa === "object";
+    });
+  }
+
   async function renderRelatoriosEmpresa() {
     setView("relatorios");
     setViewLoading(true);
@@ -69,7 +75,7 @@
         })
       );
       projetosList.forEach(function (projeto, idx) {
-        tarefasPorProjeto[String(projeto.projetoId)] = ensureList(tarefasList[idx]);
+        tarefasPorProjeto[String(projeto.projetoId)] = sanitizeTarefas(tarefasList[idx]);
       });
     }
 
@@ -89,7 +95,7 @@
     var concluidasPlanejadas = 0;
 
     var projetosResumo = projetosList.map(function (projeto) {
-      var tarefas = tarefasPorProjeto[String(projeto.projetoId)] || [];
+      var tarefas = sanitizeTarefas(tarefasPorProjeto[String(projeto.projetoId)]);
       var planejadas = tarefas.filter(function (tarefa) {
         return tarefa.dataFim && String(tarefa.dataFim).trim() !== "";
       });
@@ -185,7 +191,7 @@
       action: "TAREFAS_LISTAR_POR_PROJETO",
       payload: { projetoId: projetoId }
     });
-    const tarefasList = ensureList(tarefas);
+    const tarefasList = sanitizeTarefas(tarefas);
 
     var planejadas = tarefasList.filter(function (tarefa) {
       return tarefa.dataFim && String(tarefa.dataFim).trim() !== "";

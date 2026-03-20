@@ -44,7 +44,7 @@
       </thead>
       <tbody>
         <tr v-if="!state.projeto.tarefas.length"><td colspan="6">Sem tarefas.</td></tr>
-        <tr v-for="tarefa in state.projeto.tarefas" :key="tarefa.tarefaId" :data-tarefa="tarefa.tarefaId">
+        <tr v-for="(tarefa, idx) in state.projeto.tarefas" :key="(tarefa && tarefa.tarefaId) || ('projeto-tarefa-' + idx)" :data-tarefa="tarefa && tarefa.tarefaId ? tarefa.tarefaId : ''" v-if="tarefa">
           <td>{{ tarefa.descricao }}</td>
           <td><span :class="actions.statusClass(tarefa.fase, true)">{{ actions.statusText(tarefa.fase) }}</span></td>
           <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
@@ -77,7 +77,7 @@
     <div class="kanban-col" v-for="fase in state.projeto.fases" :key="fase.nome">
       <strong>{{ fase.nome }}</strong>
       <div class="muted" style="margin-top:8px;" v-if="!fase.tarefas.length">Sem tarefas</div>
-      <div class="kanban-card" v-for="tarefa in fase.tarefas" :key="tarefa.tarefaId">
+      <div class="kanban-card" v-for="(tarefa, idx) in fase.tarefas" :key="(tarefa && tarefa.tarefaId) || ('kanban-tarefa-' + idx)" v-if="tarefa">
         <div>{{ tarefa.descricao }}</div>
         <div class="muted" style="margin-top: 6px;"><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></div>
         <div class="muted">{{ actions.formatDate(tarefa.dataFim) }}</div>

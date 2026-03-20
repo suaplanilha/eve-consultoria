@@ -1431,17 +1431,26 @@
         APP_STATE.view = viewName || "empresas";
       }
 
-      function setViewLoading(isLoading, message) {
-        APP_STATE.loading.view = !!isLoading;
-        if (message) {
-          APP_STATE.loading.message = message;
-        } else if (!isLoading) {
-          APP_STATE.loading.message = "Carregando...";
+      function setLoading(scope, isLoading, message) {
+        if (!APP_STATE.loading.hasOwnProperty(scope)) {
+          return;
+        }
+        APP_STATE.loading[scope] = !!isLoading;
+        if (scope === "view") {
+          if (message) {
+            APP_STATE.loading.message = message;
+          } else if (!isLoading) {
+            APP_STATE.loading.message = "Carregando...";
+          }
         }
       }
 
+      function setViewLoading(isLoading, message) {
+        setLoading("view", isLoading, message);
+      }
+
       function setModalLoading(isLoading) {
-        APP_STATE.loading.modal = !!isLoading;
+        setLoading("modal", isLoading);
       }
 
       function setModalState(type, title, data) {
@@ -1704,16 +1713,6 @@
           }
         }
       }, 1500);
-
-      function badge(status) {
-        const normalized = String(status || "SEM_STATUS").toUpperCase();
-        return `<span class="badge ${normalized}">${normalized}</span>`;
-      }
-
-      function badgeSmall(status) {
-        const normalized = String(status || "SEM_STATUS").toUpperCase();
-        return `<span class="badge small ${normalized}">${normalized}</span>`;
-      }
 
       function normalizeStatus(status) {
         return String(status || "SEM_STATUS").toUpperCase();
@@ -2100,25 +2099,6 @@
         const vencendo = todasTarefas.filter(function (tarefa) {
           return String(tarefa.statusCalc || "").toUpperCase() === "VENCENDO_SEMANA";
         });
-
-        const tarefasRows = todasTarefas.map(function (tarefa) {
-          return `
-            <tr data-tarefa="${tarefa.tarefaId}">
-              <td>${tarefa.descricao}</td>
-              <td>${badgeSmall(tarefa.fase)}</td>
-              <td>${badge(tarefa.statusCalc)}</td>
-              <td>${formatDate(tarefa.dataInicio)}</td>
-              <td>${formatDate(tarefa.dataFim)}</td>
-              <td>
-                <button class="btn" data-action="editar" data-id="${tarefa.tarefaId}">Editar</button>
-                <button class="btn" data-action="prazo" data-id="${tarefa.tarefaId}">Prazo</button>
-                <button class="btn" data-action="concluir" data-id="${tarefa.tarefaId}" ${
-                  String(tarefa.statusCalc || "").toUpperCase() === "CONCLUIDA" ? "disabled" : ""
-                }>Concluir</button>
-              </td>
-            </tr>
-          `;
-        }).join("");
 
         const bloqueadoPlanejamento = String(projeto.statusCalc || "").toUpperCase() === "PLANEJAMENTO";
         const bloqueadoPendencias = pendentes.length > 0;

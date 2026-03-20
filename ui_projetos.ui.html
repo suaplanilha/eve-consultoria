@@ -44,18 +44,20 @@
       </thead>
       <tbody>
         <tr v-if="!state.projeto.tarefas.length"><td colspan="6">Sem tarefas.</td></tr>
-        <tr v-for="(tarefa, idx) in state.projeto.tarefas" :key="(tarefa && tarefa.tarefaId) || ('projeto-tarefa-' + idx)" :data-tarefa="tarefa && tarefa.tarefaId ? tarefa.tarefaId : ''" v-if="tarefa">
-          <td>{{ tarefa.descricao }}</td>
-          <td><span :class="actions.statusClass(tarefa.fase, true)">{{ actions.statusText(tarefa.fase) }}</span></td>
-          <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
-          <td>{{ actions.formatDate(tarefa.dataInicio) }}</td>
-          <td>{{ actions.formatDate(tarefa.dataFim) }}</td>
-          <td>
-            <button class="btn" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'editar', tarefa, state.projeto.faseAtual)">Editar</button>
-            <button class="btn" @click="actions.openPrazo(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa)">Prazo</button>
-            <button class="btn" :disabled="state.projeto.bloqueadoPlanejamento || actions.statusText(tarefa.statusCalc) === 'CONCLUIDA'" @click="actions.concluirTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa.tarefaId)">Concluir</button>
-          </td>
-        </tr>
+        <template v-for="(tarefa, idx) in state.projeto.tarefas" :key="(tarefa && tarefa.tarefaId) || ('projeto-tarefa-' + idx)">
+          <tr v-if="tarefa" :data-tarefa="tarefa && tarefa.tarefaId ? tarefa.tarefaId : ''">
+            <td>{{ tarefa.descricao }}</td>
+            <td><span :class="actions.statusClass(tarefa.fase, true)">{{ actions.statusText(tarefa.fase) }}</span></td>
+            <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
+            <td>{{ actions.formatDate(tarefa.dataInicio) }}</td>
+            <td>{{ actions.formatDate(tarefa.dataFim) }}</td>
+            <td>
+              <button class="btn" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'editar', tarefa, state.projeto.faseAtual)">Editar</button>
+              <button class="btn" @click="actions.openPrazo(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa)">Prazo</button>
+              <button class="btn" :disabled="state.projeto.bloqueadoPlanejamento || actions.statusText(tarefa.statusCalc) === 'CONCLUIDA'" @click="actions.concluirTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa.tarefaId)">Concluir</button>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
   </div>
@@ -77,16 +79,18 @@
     <div class="kanban-col" v-for="fase in state.projeto.fases" :key="fase.nome">
       <strong>{{ fase.nome }}</strong>
       <div class="muted" style="margin-top:8px;" v-if="!fase.tarefas.length">Sem tarefas</div>
-      <div class="kanban-card" v-for="(tarefa, idx) in fase.tarefas" :key="(tarefa && tarefa.tarefaId) || ('kanban-tarefa-' + idx)" v-if="tarefa">
-        <div>{{ tarefa.descricao }}</div>
-        <div class="muted" style="margin-top: 6px;"><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></div>
-        <div class="muted">{{ actions.formatDate(tarefa.dataFim) }}</div>
-        <div class="actions" style="justify-content: flex-start; margin-top: 8px;">
-          <button class="btn" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'editar', tarefa, state.projeto.faseAtual)">Editar</button>
-          <button class="btn" @click="actions.openPrazo(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa)">Prazo</button>
-          <button class="btn" :disabled="state.projeto.bloqueadoPlanejamento || actions.statusText(tarefa.statusCalc) === 'CONCLUIDA'" @click="actions.concluirTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa.tarefaId)">Concluir</button>
+      <template v-for="(tarefa, idx) in fase.tarefas" :key="(tarefa && tarefa.tarefaId) || ('kanban-tarefa-' + idx)">
+        <div class="kanban-card" v-if="tarefa">
+          <div>{{ tarefa.descricao }}</div>
+          <div class="muted" style="margin-top: 6px;"><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></div>
+          <div class="muted">{{ actions.formatDate(tarefa.dataFim) }}</div>
+          <div class="actions" style="justify-content: flex-start; margin-top: 8px;">
+            <button class="btn" @click="actions.openTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, 'editar', tarefa, state.projeto.faseAtual)">Editar</button>
+            <button class="btn" @click="actions.openPrazo(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa)">Prazo</button>
+            <button class="btn" :disabled="state.projeto.bloqueadoPlanejamento || actions.statusText(tarefa.statusCalc) === 'CONCLUIDA'" @click="actions.concluirTarefa(state.projeto.empresaId, state.projeto.projeto.projetoId, tarefa.tarefaId)">Concluir</button>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 </div>

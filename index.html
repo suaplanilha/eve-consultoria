@@ -968,15 +968,15 @@
                   </thead>
                   <tbody>
                     <tr v-if="!state.relatorioProjeto.tarefas.length"><td colspan="5">Sem tarefas.</td></tr>
-                    <template v-for="tarefa in state.relatorioProjeto.tarefas" :key="tarefa.tarefaId">
-                      <tr class="clickable" @click="actions.toggleTarefaDetalhe(tarefa.tarefaId)">
+                    <template v-for="(tarefa, idx) in state.relatorioProjeto.tarefas" :key="(tarefa && tarefa.tarefaId) || ('relatorio-tarefa-' + idx)">
+                      <tr v-if="tarefa" class="clickable" @click="actions.toggleTarefaDetalhe(tarefa.tarefaId)">
                         <td>{{ tarefa.descricao }}</td>
                         <td><span :class="actions.statusClass(tarefa.statusCalc)">{{ actions.statusText(tarefa.statusCalc) }}</span></td>
                         <td>{{ actions.formatDate(tarefa.dataFim) }}</td>
                         <td>{{ tarefa.metaTipo ? `Meta: ${actions.formatMeta(tarefa.metaTipo, tarefa.metaValor, tarefa.metaUnidade)}` : '-' }}</td>
                         <td>{{ tarefa.resultado || '-' }}</td>
                       </tr>
-                      <tr v-if="state.relatorioProjeto.expandedTarefaId === tarefa.tarefaId">
+                      <tr v-if="tarefa && state.relatorioProjeto.expandedTarefaId === tarefa.tarefaId">
                         <td colspan="5">
                           <div class="card" style="margin-top: 10px;">
                             <div class="muted"><strong>Detalhes</strong></div>
@@ -1057,10 +1057,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="tarefa in state.modal.data.tarefas" :key="tarefa.tarefaId" :data-tarefa="tarefa.tarefaId">
+                <tr v-for="(tarefa, idx) in state.modal.data.tarefas" :key="(tarefa && tarefa.tarefaId) || ('planejar-tarefa-' + idx)" :data-tarefa="tarefa && tarefa.tarefaId ? tarefa.tarefaId : ''">
+                  <template v-if="tarefa">
                   <td>{{ tarefa.descricao }}</td>
                   <td><input type="date" data-field="dataInicio" :value="tarefa.dataInicio || ''"></td>
                   <td><input type="date" data-field="dataFim" :value="tarefa.dataFim || ''"></td>
+                  </template>
                 </tr>
               </tbody>
             </table>
@@ -2155,6 +2157,9 @@
             var hasError = false;
             rows.forEach(function (row) {
               var tarefaId = row.dataset.tarefa;
+              if (!tarefaId) {
+                return;
+              }
               var dataInicio = row.querySelector("[data-field='dataInicio']").value || "";
               var dataFim = row.querySelector("[data-field='dataFim']").value || "";
               if (!dataInicio || !dataFim) {

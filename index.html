@@ -681,7 +681,7 @@
         <div class="view-wrap">
           <div class="view-loading" v-if="state.loading.view">
             <div class="spinner spinner-lg"></div>
-            <div class="muted" style="margin-top: 12px;">Carregando...</div>
+            <div class="muted" style="margin-top: 12px;">{{ state.loading.message || 'Carregando...' }}</div>
           </div>
           <div id="view">
             <div v-if="state.view === 'projeto'">
@@ -1223,10 +1223,17 @@
         router: {},
         exec: {},
       };
+      const SAE_DEBUG = false;
+      function logDebug() {
+        if (!SAE_DEBUG) {
+          return;
+        }
+        console.log.apply(console, arguments);
+      }
 
       const APP_STATE = Vue.reactive({
         view: "empresas",
-        loading: { view: false, modal: false },
+        loading: { view: false, modal: false, message: "Carregando..." },
         modal: { show: false, title: "", type: "", data: {} },
         uiModal: {
           show: false,
@@ -1424,8 +1431,13 @@
         APP_STATE.view = viewName || "empresas";
       }
 
-      function setViewLoading(isLoading) {
+      function setViewLoading(isLoading, message) {
         APP_STATE.loading.view = !!isLoading;
+        if (message) {
+          APP_STATE.loading.message = message;
+        } else if (!isLoading) {
+          APP_STATE.loading.message = "Carregando...";
+        }
       }
 
       function setModalLoading(isLoading) {
@@ -1439,7 +1451,7 @@
       }
 
       function openUiModal(config) {
-        console.log("[UI_MODAL] openUiModal chamado", config);
+        logDebug("[UI_MODAL] openUiModal chamado", config);
         APP_STATE.uiModal.show = true;
         APP_STATE.uiModal.mode = config.mode || "alert";
         APP_STATE.uiModal.title = config.title || "";
@@ -1781,7 +1793,7 @@
 
       async function renderDashboard() {
         setView("dashboard");
-        setViewLoading(true);
+        setViewLoading(true, "Carregando dashboard...");
         const [resumoGeral, empresas, topRisco, projetos] = await Promise.all([
           SAE.exec({ action: "DASHBOARD_RESUMO_GERAL", payload: {} }),
           SAE.exec({ action: "EMPRESAS_LISTAR", payload: {} }),
@@ -1805,7 +1817,7 @@
       }
 
       async function renderDashboardContent(empresaId, resumoGeral, topRisco, projetos) {
-        setViewLoading(true);
+        setViewLoading(true, "Carregando empresas...");
         var resumo = resumoGeral;
         var projetosBase = ensureList(projetos);
         var modoEmpresa = !!empresaId;
@@ -1879,7 +1891,7 @@
       }
 
       async function renderEmpresas() {
-        setViewLoading(true);
+        setViewLoading(true, "Carregando empresa e projetos...");
         setView("empresas");
         const [empresas, projetos] = await Promise.all([
           SAE.exec({ action: "EMPRESAS_LISTAR", payload: {} }),
@@ -1905,7 +1917,7 @@
       }
 
       async function renderEmpresaDetalhe(empresaId) {
-        setViewLoading(true);
+        setViewLoading(true, "Carregando templates...");
         setView("empresa");
         const [empresa, projetos, relatorio] = await Promise.all([
           SAE.exec({ action: "EMPRESAS_OBTER", payload: { empresaId } }),
@@ -2043,7 +2055,7 @@
       }
 
       async function renderProjetoKanban(empresaId, projetoId) {
-        setViewLoading(true);
+        setViewLoading(true, "Carregando projeto...");
         setView("projeto");
         const [projeto, kanban, empresa] = await Promise.all([
           SAE.exec({ action: "PROJETOS_OBTER", payload: { projetoId } }),
@@ -2319,7 +2331,7 @@
       }
 
       function openTarefaModal(empresaId, projetoId, mode, tarefa, faseAtual) {
-        console.log("[TAREFA] openTarefaModal chamado", { mode, tarefaId: tarefa ? tarefa.tarefaId : null });
+        logDebug("[TAREFA] openTarefaModal chamado", { mode, tarefaId: tarefa ? tarefa.tarefaId : null });
         var isEdit = mode === "editar";
         setModalState("tarefa", isEdit ? "Editar Tarefa" : "Nova Tarefa", {
           tarefa: tarefa || null,
@@ -2330,7 +2342,7 @@
         openModal();
 
         afterModalRender(function () {
-          console.log("[TAREFA] afterModalRender callback disparado");
+          logDebug("[TAREFA] afterModalRender callback disparado");
           var btnCancelar = $("btnCancelarTarefa");
           var btnSalvar = $("btnSalvarTarefa");
           console.log("[TAREFA] btnSalvar=", btnSalvar, "btnCancelar=", btnCancelar);
@@ -2412,6 +2424,7 @@
               console.log("[TAREFA] SAE.exec retornou", tarefaRes);
               if (tarefaRes && tarefaRes.cancelled) {
                 console.log("[TAREFA] Operacao cancelada pelo usuario.");
+                await SAE.ui.success("Operacao cancelada", "Nenhuma alteracao foi aplicada na tarefa.");
                 return;
               }
               if (tarefaRes && tarefaRes.ok === false) {
@@ -2485,6 +2498,7 @@
           confirmText: "Confirmar conclusão da tarefa?"
         });
         if (concluirRes && concluirRes.cancelled) {
+          await SAE.ui.success("Operacao cancelada", "A tarefa nao foi alterada.");
           return;
         }
         if (concluirRes && concluirRes.ok === false) {
